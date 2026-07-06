@@ -174,6 +174,13 @@
   .f-file{grid-column:1 / -1}
   .file-open{grid-column:1 / -1;font-size:12px;justify-self:start}
   .followup .note-in{width:100%}
+  .fu-meta{font-size:11px;color:var(--ink-48);min-height:0}
+  .fu-meta:empty{display:none}
+  .name-in{font-family:inherit;font-size:13px;color:var(--ink);background:var(--canvas);
+    border:1px solid var(--hairline);border-radius:9999px;padding:8px 14px;width:110px}
+  .name-in::placeholder{color:var(--ink-48)}
+  .name-in:focus{outline:none;border:2px solid var(--blue-focus);padding:7px 13px}
+  .last-upd{font-size:12px;color:var(--ink-48);white-space:nowrap}
   /* 카테고리 헤더 상태 칩 — 글자색만 */
   .chip{font-size:12px;padding:2px 10px;border-radius:9999px;border:1px solid var(--hairline);background:var(--canvas);color:var(--ink-48);margin-left:2px}
   .chip.c-contacted{color:var(--blue)}
@@ -209,7 +216,7 @@
 <header class="top">
   <div class="eyebrow">공급망 디렉터리 · v3 · 2026.07 기준 · 19개 카테고리</div>
   <h1>UAE 인테리어 자재 공급망 매뉴얼</h1>
-  <p class="lede">두바이 · 아부다비 · 샤르자 기준 등급별 공급업체 디렉터리와 실무 플레이북. 조달(구매·계약) 실무용 시작 데이터베이스 — 카드의 <b>위치 링크</b>를 클릭하면 Google 지도가 열립니다.</p>
+  <p class="lede">두바이 · 아부다비 · 샤르자 기준 등급별 공급업체 디렉터리와 <b>업체별 확인사항</b>. 조달(구매·계약) 실무용 시작 데이터베이스 — 카드의 <b>위치 링크</b>를 클릭하면 Google 지도가 열립니다.</p>
   <details class="disclaimer">
     <summary>이 디렉터리 읽는 법 ›</summary>
     <div class="dbody">
@@ -271,6 +278,8 @@
       <span id="progress" class="progress">방문 0 / 0</span>
       <div class="progbar"><i id="progfill"></i></div>
       <button id="btnNew" class="btn" title="아직 확인 안 한 신규 업체만 보기 (사장님이 링크로 보내 새로 추가된 곳)">안 본 신규 <b class="cnt-b" id="newCount">0</b></button>
+      <span id="lastUpd" class="last-upd" title="가장 최근 변경(누가·언제)"></span>
+      <input id="userName" class="name-in" placeholder="내 이름" title="변경 기록에 표시할 이름 — 한 번만 입력하면 이 기기에 저장됩니다" maxlength="12">
       <button id="btnDrive" class="btn btn-drive" title="구글 드라이브에 로그인해 방문·메모 자동 동기화">드라이브 동기화</button>
       <span id="syncStatus" class="sync-status">로그인 안 됨</span>
       <button id="btnExport" class="btn" title="방문·메모를 JSON 파일로 저장 → 구글 드라이브에 업로드">백업 내보내기</button>
@@ -294,48 +303,105 @@
     <div id="content"></div>
 
     <section class="cat-block" id="playbook">
-      <div class="cat-head"><h2>＋ 실무 플레이북</h2><span class="ko">방문 동선 · 견적 체크리스트 · 럭셔리 빌라 기본 스펙</span></div>
-      <div class="cat-note">업체 디렉터리와 별개로, 현장에서 바로 쓰는 질문·검증 도구. 핵심은 "어디가 싸냐"가 아니라 <b>각 자재별 기준 업체를 잡고 그 기준으로 인테리어 업체 견적을 검증</b>하는 것.</div>
+      <div class="cat-head"><h2>＋ 업체별 확인사항</h2><span class="ko">미팅·방문·발주 때 물어볼 것 (자재/카테고리별)</span></div>
+      <div class="cat-note">각 카테고리 업체를 만날 때 <b>확인·질문할 항목</b>입니다. 핵심은 "어디가 싸냐"가 아니라 같은 조건으로 비교해 인테리어 업체 견적을 검증하는 것. (프로젝트별 실제 자재 스펙은 민감 정보라 여기 없음 — 별도 비공개 파일에서 관리)</div>
 
-      <div class="pb-grid">
-        <div class="pb-card">
-          <h4>Sharjah 하루 (석재 투어)</h4>
-          <ol><li>Independent Marble — 가공/시공 능력</li><li>Glaze — 고급 슬랩 + Caesarstone</li><li>Fair Deal — 시장 전체 가격/종류</li><li>SIOM — 이탈리아 마블</li><li>Al Asal — 포세린/쿼차이트 대체재</li><li>White Palace — 가격 비교</li></ol>
-        </div>
-        <div class="pb-card">
-          <h4>Dubai 하루 (자재·마감)</h4>
-          <ol><li>Danube — MDF/합판/HPL 기준점</li><li>Gratis / Planet Eco — 캐비닛 실무 자재</li><li>Häfele / Blum 딜러 — 경첩·레일·수납</li><li>Delta Light / Artemide (d3) — 고급 조명</li><li>SANIPEX / BAGNODESIGN — 욕실·타일·수전</li><li>Gessi / Casamia — 초고급 욕실 감성</li></ol>
-        </div>
+      <div class="pb-card pb-wide" style="border-color:var(--blue-focus)">
+        <h4>공통 — 어느 업체든 이 3가지부터</h4>
+        <ul><li><b>① 있나?</b> — 지정 자재(또는 비슷한 무늬·색)를 취급하는지 · 실물/재고 확인 가능한지</li>
+        <li><b>② 대안은?</b> — 단종/납기 길면 유사 대체 후보. (지정 + 대안 <b>2안 견적</b> 요청)</li>
+        <li><b>③ 얼마·언제?</b> — 단가(㎡·개당) / 최소수량(MOQ) / 리드타임(납기) / 결제조건</li>
+        <li><b>+ 공급구조</b> — 직수입/제조(단일 마진)인지 재판매(마진 이중)인지 · <b>트레이드 할인율</b> · Supply only vs 설치 포함(Turnkey)</li></ul>
       </div>
 
       <div class="pb-cl">
         <div class="pb-card">
-          <h4>Marble 견적 체크리스트</h4>
-          <ul><li><b>원산지(Country of Origin)</b> — 이탈리아/그리스/중국산 확인</li><li><b>슬랩 사진 + 슬랩 번호</b> — 나중에 다른 슬랩으로 바뀌는 것 방지</li><li><b>두께</b> 18/20/30mm</li><li><b>마감</b> polished / honed / leather</li><li><b>북매치(Bookmatch) 가능 수량</b> — 고급 벽체 필수</li><li><b>Supply only vs Turnkey(설치 포함)</b></li><li><b>Sealer(실란트) 포함 여부</b> — 오염 방지</li><li><b>Wastage(로스율) 계산</b> — 실제 견적차 큼</li></ul>
+          <h4>대리석 · 천연석</h4>
+          <ul><li>원산지(Country of Origin) · <b>슬랩 사진+슬랩 번호</b>(교체 방지)</li><li>두께 18/20/30mm · 마감 polished/honed/leather</li><li><b>북매치(Bookmatch) 가능 수량</b> · Sealer(실란트) 포함</li><li>Wastage(로스율) 계산 · Supply only vs Turnkey</li></ul>
         </div>
         <div class="pb-card">
-          <h4>Cabinet 견적 체크리스트</h4>
-          <ul><li><b>MDF vs Plywood</b> — 내구성/습기 차이</li><li><b>MR(방습) MDF vs 일반</b> — 주방/욕실 주변 중요</li><li><b>HPL vs Veneer vs Paint finish</b> — 가격·마감 완전 다름</li><li><b>Edge band 브랜드/두께</b> — 싸구려 느낌 방지</li><li><b>경첩/레일 브랜드</b> — Blum / Häfele인지</li><li><b>Carcass(내부) 자재</b> — 내부만 싼 경우 많음</li><li><b>Door shutter 마감재</b></li><li><b>Warranty</b> — 경첩·레일·문짝 휨 보증</li></ul>
+          <h4>타일 · 세라믹 · 포세린</h4>
+          <ul><li>규격(600×600 / 600×1200 / 대형슬랩) · 두께</li><li>표면 matte/polished · <b>미끄럼방지 등급(R9~R11)</b> · rectified 여부</li><li>내마모(PEI) · <b>배치(dye lot)·재고</b>(추가분 색차 주의)</li><li>박스당 수량 · 단가/㎡ · 트림/코너재 · 리드타임</li></ul>
         </div>
         <div class="pb-card">
-          <h4>Lighting 견적 체크리스트</h4>
-          <ul><li><b>색온도</b> 2700K / 3000K / 4000K</li><li><b>CRI</b> — 색감 품질(고급은 90+)</li><li><b>Beam angle</b> — 빛 퍼짐</li><li><b>Dimming 가능 여부</b> — 스마트홈 연동</li><li><b>드라이버 브랜드</b> — 깜빡임/소음/고장 방지</li><li><b>Trim 디테일</b> — 고급스러움 차이</li><li>※ 간접조명 LED 프로파일·드라이버는 실무형 LED 업체에서 별도 비교</li></ul>
+          <h4>캐비닛 · 목재/패널</h4>
+          <ul><li>MDF vs 합판 · <b>MR(방습) 여부</b>(주방·욕실)</li><li>마감 HPL vs Veneer vs Paint · Edge band 브랜드/두께</li><li>경첩·레일 브랜드(Häfele/Hettich급) · Carcass(내부) 자재</li><li>FSC 인증 · 문짝 휨/하드웨어 보증</li></ul>
         </div>
         <div class="pb-card">
-          <h4>Bathroom 견적 체크리스트</h4>
-          <ul><li><b>매립 수전 브랜드</b> — 나중에 수리 어려움</li><li><b>플러시 탱크 브랜드</b> — Geberit 등</li><li><b>Floor drain 타입</b> — 냄새/배수</li><li><b>방수 시스템</b> — 누수 방지 핵심</li><li><b>타일 구배(slope)</b> — 샤워실 물고임 방지</li><li><b>액세서리 마감</b> — chrome / brushed nickel / matte black</li></ul>
+          <h4>하드웨어 · 철물</h4>
+          <ul><li><b>정품·공인 스토키스트</b> 여부 · soft-close</li><li>하중·개폐 사이클 등급 · 마감(brushed/PVD)</li><li>유리·슬라이딩 피팅 규격 · 재고·리드타임 · 보증</li></ul>
+        </div>
+        <div class="pb-card">
+          <h4>조명</h4>
+          <ul><li>색온도 2700/3000/4000K · <b>CRI 90+</b> · Beam angle</li><li>Dimming 방식(TRIAC/0-10V/DALI) · <b>드라이버 브랜드</b></li><li>욕실·외부 IP등급 · Trim 디테일 · 워런티</li><li>※ 간접조명 LED 프로파일·드라이버는 별도 비교</li></ul>
+        </div>
+        <div class="pb-card">
+          <h4>위생도기 · 욕실</h4>
+          <ul><li><b>매립부(concealed) 브랜드·부품 수급</b>(수리 대비)</li><li>플러시 시스턴(Geberit 등) · Floor drain 타입</li><li>WC 배수 S/P-trap · 수압 요건 · 워런티</li><li>액세서리 마감 chrome/brushed nickel/matte black</li></ul>
+        </div>
+        <div class="pb-card">
+          <h4>페인트</h4>
+          <ul><li>등급 matte/silk/<b>hygiene·방수</b>(습식) · VOC</li><li>도포 회수·커버리지(㎡/L) · 프라이머/방청</li><li>컬러매칭·틴팅 시스템 · 로트 색차</li></ul>
+        </div>
+        <div class="pb-card">
+          <h4>석고 · 천장 · 칸막이</h4>
+          <ul><li>보드 종류 일반/<b>MR(방습)/FR(방화)/방음</b> · 두께</li><li>메탈 프레임 게이지 · 시스템 인증</li><li>방화등급 · 천장 점검구·조인팅 마감</li></ul>
+        </div>
+        <div class="pb-card">
+          <h4>유리 · 거울 · 샤워파티션</h4>
+          <ul><li>강화/접합(tempered/laminated) · 두께 10/12mm</li><li>low-iron(로우아이언) · 항석회 코팅 · 힌지/클램프 브랜드</li><li>방음(STC) · <b>방화유리는 Civil Defence 인증</b> · 실리콘 마감</li></ul>
+        </div>
+        <div class="pb-card">
+          <h4>도어 · 창호 (방화문)</h4>
+          <ul><li><b>Civil Defence 방화인증</b>(방화문 필수) · 차음(dB)</li><li>코어 solid/hollow · 프레임·기밀 · 하드웨어 브랜드</li><li>외부창 U-value/기밀 · <b>개구부 실측·프레임 선시공 조율</b></li></ul>
+        </div>
+        <div class="pb-card">
+          <h4>스마트홈</h4>
+          <ul><li>프로토콜 KNX/Control4/Lutron/Crestron · 확장성</li><li>통합 범위(조명·커튼·AV·HVAC·보안) · 앱/음성</li><li>프로그래밍·AS 조건 · 보증·유지관리</li></ul>
+        </div>
+        <div class="pb-card">
+          <h4>수영장 설비</h4>
+          <ul><li>여과·순환 용량 · 장비 브랜드(Pentair/Hayward/AstralPool)</li><li>자동화·소독(염소/소금) · 방수·타일 시스템</li><li>유지보수 계약 · 인허가(DM/Trakhees)</li></ul>
+        </div>
+        <div class="pb-card">
+          <h4>조경</h4>
+          <ul><li><b>관개(drip/sprinkler) 설계</b> · 수종·야자 공급 안정</li><li>하드스케이프 자재 · 외부조명 · 골프 퍼팅그린(USGA)</li><li>유지관리 · 인허가</li></ul>
+        </div>
+        <div class="pb-card">
+          <h4>주방가전</h4>
+          <ul><li><b>공인 딜러·정품 워런티</b> · 빌트인 규격·전원(단상/삼상)</li><li>배기(덕트/재순환) · AS·부품 수급 · 리드타임</li></ul>
+        </div>
+        <div class="pb-card">
+          <h4>주방 · 워드로브 스튜디오</h4>
+          <ul><li>캐비닛 코어(MR MDF/합판) · 도어 마감 · 하드웨어(Blum/Häfele급)</li><li><b>가전 패키지 포함 여부</b> · 수입 리드타임 vs 현지 제작</li><li>실측·설치 · 보증</li></ul>
+        </div>
+        <div class="pb-card">
+          <h4>가구 · 패브릭</h4>
+          <ul><li>계약(contract) 등급 여부 · <b>원단 Martindale(마모)</b></li><li><b>방화 BS5867/IMO</b>(호텔 필수) · 수입 리드타임</li><li>FF&E 범위 · 샘플·현물 확인</li></ul>
+        </div>
+        <div class="pb-card">
+          <h4>커튼 · 드레이퍼리</h4>
+          <ul><li>원단 등급·방화 · 블랙아웃/암막 · 채광</li><li><b>전동화(Somfy 등 모터)</b> · 트랙/봉 품질</li><li>봉제·설치 포함 여부 · 실측</li></ul>
+        </div>
+        <div class="pb-card">
+          <h4>방수재</h4>
+          <ul><li>부위별 시스템(욕실/지하/옥상) · 멤브레인 타입(액체/시트/크리스탈린)</li><li><b>보증 연수·시공 자격</b> · 프라이머/조인트 처리</li><li>시공 품질(감리) — 자재보다 시공이 더 중요</li></ul>
+        </div>
+        <div class="pb-card">
+          <h4>바닥재 (마루)</h4>
+          <ul><li>원목/엔지니어드/LVT · 표면(오일/래커/UV) · top layer 두께</li><li>시공(접착/클릭) · <b>습기·바닥난방 대응</b></li><li>보수·샌딩 가능 여부 · 보증</li></ul>
         </div>
       </div>
 
       <div class="pb-card pb-wide">
-        <h4>럭셔리 빌라 기본 스펙 (기준점)</h4>
+        <h4>럭셔리 빌라 기본 스펙 (기준점 · 참고)</h4>
         <table class="pb-table">
           <tr><th>공간</th><th>추천 스펙</th></tr>
-          <tr><td>Kitchen</td><td>Blum Legrabox / Häfele 액세서리 / 쿼차이트 또는 포세린 상판</td></tr>
+          <tr><td>Kitchen</td><td>Blum/Häfele급 모션 하드웨어 / 쿼차이트 또는 포세린 상판</td></tr>
           <tr><td>Master Bath</td><td>Gessi 또는 BAGNODESIGN / Geberit 매립 탱크 / 북매치 대리석</td></tr>
-          <tr><td>Guest Bath</td><td>Grohe 또는 Hansgrohe / 포세린 슬랩 / Geberit</td></tr>
+          <tr><td>Guest Bath</td><td>Hansgrohe 또는 Grohe / 포세린 슬랩 / Geberit</td></tr>
           <tr><td>Living</td><td>이탈리아 대리석 또는 대형 포세린 슬랩 / Delta Light / 간접조명</td></tr>
-          <tr><td>Wardrobe</td><td>MR MDF 또는 합판 carcass / 베니어·HPL shutter / Blum·Häfele 피팅</td></tr>
+          <tr><td>Wardrobe</td><td>MR MDF 또는 합판 carcass / 베니어·HPL shutter / Häfele·Hettich 피팅</td></tr>
           <tr><td>Smart Home</td><td>KNX 베이스 + Lutron 조명/커튼 또는 Control4 라이프스타일 레이어</td></tr>
           <tr><td>Pool</td><td>AstralPool / Hayward / Pentair급 장비 + 자동화 + 적정 여과</td></tr>
           <tr><td>Paint</td><td>Jotun 프리미엄, 선택 공간은 Benjamin Moore</td></tr>
@@ -376,8 +442,8 @@ const DATA = [
     brands:"대리석·화강암 공급 + 자체 가공",pro:"자체 공장 = 가공 통제·커스텀 사이징",con:"공장 모델 — 빠른 슬랩 픽업보단 가공물 적합",web:"independentmarble.com"},
    {n:"Glaze Granite & Marble",loc:"Mussafah(AD) · Sharjah",tier:"mid",grade:["apartment","mid-tier"],
     brands:"대리석·화강암·쿼차이트·오닉스·트래버틴·석회암·타일",pro:"넓은 자재 카탈로그, AD+샤르자 거점 — AD 현장 유용",con:"물량·트레이드 지향, 지점별 쇼룸 편차",web:"glaze.ae"},
-   {n:"SIOM Marble & Granite Factory",loc:"Mussafah, Abu Dhabi",tier:"premium",grade:["high-end villa","hotel-commercial"],
-    brands:"이탈리아 대리석·화강암·쿼차이트",pro:"이탈리아 대리석 특화, 공장 가공, AD 거점",con:"고가·긴 리드타임",web:"siommarble.com"},
+   {n:"SIOM Marble & Granite Factory",loc:"공장: Emirates Industrial City, Sharjah · AD 사무실",tier:"premium",grade:["high-end villa","hotel-commercial"],
+    brands:"이탈리아 대리석·화강암·쿼차이트",pro:"이탈리아 대리석 특화, 공장 가공(공장은 샤르자, AD는 사무실)",con:"고가·긴 리드타임",web:"siommarble.com"},
    {n:"Alwasta Marbles & Granite",loc:"behind Emirates Road, Al Sajaa Ind. City, Sharjah",tier:"budget",grade:["apartment","mid-tier"],closed:true,
     brands:"대리석·화강암 제조/산업 공급",pro:"샤르자 산업 가격, 가성비 물량",con:"⛔ Google 지도상 '폐업함' 표시(2026-07 확인) — 웹사이트는 살아있으나 야적장 폐업 가능. 거래 전 실제 운영 확인 필수",web:"alwastamarble.com"},
    {n:"Greeco Marble",loc:"Mussafah, Abu Dhabi",tier:"premium",grade:["mid-tier","high-end villa"],
@@ -397,7 +463,7 @@ const DATA = [
   items:[
    {n:"Porcelanosa Middle East",loc:"Al Hashemi Bldg Showroom 1, Sheikh Zayed Rd · d3 Bldg 7 · Al Quoz 유통",tier:"luxury",grade:["high-end villa","hotel-commercial"],
     maps:[{l:"쇼룸 · Al Hashemi Bldg, SZR",q:"Porcelanosa Middle East Sheikh Zayed Road Dubai"},{l:"d3 · Bldg 7",q:"Porcelanosa Dubai Design District Building 7"}],
-    brands:"스페인 프리미엄 타일·대형슬랩·천연석·주방·위생도기 (Grupo Porcelanosa, 970+ 매장/150개국)",pro:"글로벌 럭셔리 브랜드, 타일~석재~주방 톤 통일, 대형슬랩(1200×2400 등) 라인 강함",con:"럭셔리 가격, 예산 물량엔 부적합",web:"porcelanosa.com",also:["cabinet","sanitary"]},
+    brands:"스페인 Grupo Porcelanosa 종합 — 타일·대형슬랩(Porcelanosa/Venis) · 위생도기·수전(Noken) · 주방(Gamadecor) · 천연석·원목마루(L'Antic Colonial) · 솔리드서피스(Krion) (970+매장/150개국)",pro:"글로벌 럭셔리 종합 브랜드 — 타일·석재·주방·욕실·바닥까지 한 브랜드로 톤 통일 가능, 대형슬랩(1200×2400) 강함",con:"럭셔리 가격, 예산 물량엔 부적합",web:"porcelanosa.com",also:["sanitary","kitchen","flooring","marble"]},
    {n:"Graniti Building Materials",loc:"685 Sheikh Zayed Rd 플래그십 · Elina by Graniti: Deira · UAQ 창고",tier:"luxury",grade:["high-end villa","hotel-commercial"],
     maps:[{l:"플래그십 쇼룸 · 685 SZR (★방문)",u:"https://maps.app.goo.gl/K4muaYGohXTGVav79"},{l:"Elina by Graniti · Deira",q:"Elina by Graniti Salah Al Din Street Deira Dubai"}],
     brands:"이탈리아/브라질 프리미엄 유통 — Atlas Concorde·Ariostea·Cotto d'Este·Portobello·Newform (슬랩 180+ 전시)",pro:"세계 톱 브랜드 슬랩 셀렉션 한곳, 주방상판~로비~욕실 컨셉 전시, 스펙용 기준점",con:"프리미엄 유통 = 고가, 브랜드 위주",web:"granitiuae.com"},
@@ -435,10 +501,6 @@ const DATA = [
     brands:"합판·MDF(방습/방화)·조이너리 자재·시멘트 / '지속가능 산림' 합판 (2019~)",pro:"합판·MDF 조이너리 특화, 에코 앵글, 다지점",con:"비교적 신생(2019), 프리미엄 장식표면보단 기능/중급",web:"planeteco.com"},
    {n:"Gratis Building & Construction Materials",src:"user",loc:"Dubai (구 Carino, UAE 전역 배송)",tier:"budget",grade:["apartment","mid-tier"],
     brands:"건자재·목재/라미네이트·바닥재·도어/창호·하드웨어·전기·욕실 (원스톱)",pro:"여러 카테고리 넓은 원스톱, UAE 전역 공급",con:"제네럴리스트 — 전문 목재/패널 야적장 대비 합판/베니어 등급 깊이 약함, 최근 Carino서 리브랜딩",web:"gratis.ae"},
-   {n:"Khaleej Building Materials",src:"user",loc:"⚠️ 정확 상호 미확인",tier:"budget",grade:["mid-tier"],flag:true,
-    brands:"합판/MDF(추정) — 동일 상호 미확인",pro:"가구제작 야적장으로 언급됨",con:"🚩 웹 재검증(2026-07): 이 상호의 두바이 업체는 UAE 디렉터리·웹 전체에서 미등재. 유력 실체는 Burj Al Khaleej Bldg Materials Trading LLC(아부다비 Musaffah, D&B '목재 도매' 등재, 웹사이트 없음) — 소재지가 두바이 아님. 두바이 목재 야적장 대안: ACME·Dani Trading. 라이선스명 직접 확인 필요",web:"검색: Burj Al Khaleej"},
-   {n:"DecoWood Green Building Materials",src:"user",loc:"⚠️ 정확 상호 미확인",tier:"mid",grade:["mid-tier","high-end villa"],flag:true,
-    brands:"베니어/장식목재(추정) — 동일 상호 미확인",pro:"베니어/장식재 관련 언급",con:"🚩 웹 재검증(2026-07): 이 상호 실재 근거 없음(디렉터리 전무) — 'Decowood'는 Greenlam(인도)의 베니어 브랜드명으로 확인됨. 조달 컨택은 Greenlam Middle East(JLT, ☎ +971-50-350-4262, 본 카테고리 'Greenlam Laminates ME' 카드) 또는 Reliance Veneer 권장",web:"decowoodveneers.com (브랜드)"},
    {n:"Suma Building Materials",loc:"Sharjah (Dubai·UAE 공급)",tier:"premium",grade:["high-end villa","hotel-commercial"],
     brands:"목재·장식 베니어·합판 (35년+)",pro:"장식 베니어 전문, 고급 프로젝트 트랙레코드",con:"베니어·특수재 중심, 최저가 커머디티 아님",web:"suma.ae"},
    {n:"Greenlam Laminates ME",loc:"Dubai (브랜드 유통)",tier:"premium",grade:["mid-tier","high-end villa","hotel-commercial"],
@@ -468,15 +530,11 @@ const DATA = [
     brands:"가구 피팅·건축 철물·캐비닛 HW·Dialock 전자잠금·조명 (독일)",pro:"UAE 피트아웃 HW 디폴트 원스톱, 재고·쇼룸·프로젝트 지원",con:"제네릭 대비 프리미엄, 최적가엔 계정 셋업 필요",web:"hafele.ae"},
    {n:"Hettich UAE",loc:"JLT, Dubai · 딜러망(Sharjah·Dubai)",tier:"premium",grade:["mid-tier","high-end villa","hotel-commercial"],
     brands:"가구 피팅·힌지·서랍·슬라이딩/건축 HW",pro:"Blum 대안(독일), 가성비 우수, 3개 에미리트 딜러망",con:"본사는 JLT(법인) — 재고는 지정 딜러 통해",web:"hettich.com"},
-   {n:"Blum (공인 딜러)",loc:"딜러: Ectratech/Solutions LLC, Al Karama, Dubai",tier:"premium",grade:["high-end villa","hotel-commercial"],
-    brands:"프리미엄 힌지·서랍레일(TANDEMBOX/LEGRABOX급)·리프트",pro:"최고급 모션 HW, 소프트클로즈 품질, 강한 보증 평판",con:"딜러 경유(단일 쇼룸 X) — 공인 스토키스트 확인, 고가",web:"blum.com"},
-   {n:"Dormakaba Gulf",loc:"Al Karama, Dubai (1997~)",tier:"premium",grade:["high-end villa","hotel-commercial"],
+   {n:"Dormakaba Gulf",loc:"Jebel Ali, Dubai (지역본부) · AD 오피스 (1997~)",tier:"premium",grade:["high-end villa","hotel-commercial"],
     brands:"도어 HW·도어클로저·출입통제·전자잠금·출입구 시스템",pro:"호텔·공항·헬스케어 레퍼런스, 도어·출입 강함",con:"도어/출입 전문(캐비닛 피팅 X), 프리미엄",web:"dormakaba.com/ae-en"},
    {n:"Shafic Dagher Ind. & Tr.",loc:"Sharjah",tier:"mid",grade:["mid-tier"],
     brands:"Hettich + 일반 가구/건축 철물 유통",pro:"확립된 HW 트레이더, 북부 에미리트 거점",con:"멀티브랜드 딜러 — 정확한 재고 라인 확인",web:"hettich 딜러"},
-   {n:"GU (Gretsch-Unitas)",loc:"UAE 공식 지사 없음 — 트레이더 경유",tier:"premium",grade:["mid-tier","hotel-commercial"],flag:true,
-    brands:"도어·창호 HW, 잠금·자동출입 시스템",pro:"창호·도어 피팅 강함, 파사드/조이너리 패키지에 흔함 (UAE 레퍼런스: 루브르 아부다비·Ocean Heights)",con:"🚩 웹 재검증(2026-07): GU 본사 지사 목록에 UAE 없음 — 취급 트레이더: Door Controls Glass Trading(두바이 Al Qusais, WhatsApp +971-56-412-3113)·Reborn Trading(AD Musaffah). '공인' 딜러 지정 여부는 GU 본사(g-u.com) 직접 문의",web:"g-u.com"},
-   {n:"Mohd Al Qama Bldg Materials",loc:"Dubai",tier:"budget",grade:["apartment","mid-tier"],
+   {n:"Mohd Al Qama Bldg Materials",loc:"Al Quoz Industrial 3, Dubai (8지점)",tier:"budget",grade:["apartment","mid-tier"],
     brands:"Hettich + 건축/철물 자재",pro:"HW+건자재 함께 — 실용적 트레이드 공급",con:"일반 트레이더, 디자이너 지원 제한",web:"04-341 6323"},
    {n:"Euro Art Middle East (EuroArt)",src:"user",added:"2026-07-06",loc:"쇼룸 Al Garhoud · 물류 JAFZA · Al Quoz 배송센터 · AD Najda St",tier:"premium",grade:["mid-tier","high-end villa","hotel-commercial"],
     maps:[{l:"쇼룸 (Al Garhoud)",q:"Euro Art Middle East Al Garhoud Dubai"},{l:"Al Quoz 배송센터",q:"Euro Art Middle East Al Quoz Dubai"}],
@@ -744,15 +802,15 @@ const DATA = [
    {n:"Radium Nobel Furniture",src:"user",added:"2026-07-06",loc:"Nadd Al Hamar, Ras Al Khor, Dubai",tier:"luxury",grade:["high-end villa"],also:["kitchen"],
     brands:"럭셔리 맞춤 워크인 워드로브·가구 (중국계, 이탈리아 디자인팀 협업 표방) — 가죽 마감 공예, 대리석·유리·미러 연출",pro:"★사용자 언급. 하이엔드 워드로브 커스터마이징 특화, Ras Al Khor 쇼룸(10:00–20:00). ☎ +971-4-575-7802",con:"정식 웹사이트 없음(SNS·블로그만) — 레퍼런스·품질 방문 확인 필요",web:"radiumnobel.blogspot.com",ig:"https://www.instagram.com/radium_nobel/"},
    {n:"Intermetal",loc:"Dubai (1989~, 40만 sqft 공장)",tier:"premium",grade:["mid-tier","hotel-commercial"],
-    brands:"계약 가구 제조 — 호텔·리조트·레스토랑·오피스·헬스케어",pro:"대형 로컬 제조=물량 캐파·커스텀·리드타임 통제",con:"계약/물량 포커스 — 부티크성 약함",web:"intermetal.ae"},
+    brands:"계약 가구 제조 — 호텔·리조트·레스토랑·오피스·헬스케어",pro:"대형 로컬 제조=물량 캐파·커스텀·리드타임 통제",con:"계약/물량 포커스 — 부티크성 약함",web:"intermetal.com"},
    {n:"Depa Interiors",loc:"UAE (1996~)",tier:"luxury",grade:["high-end villa","hotel-commercial"],
     brands:"턴키 인테리어 + 5성 호텔·궁전·박물관·공항 FF&E",pro:"최상급 호텔 혈통, 풀 FF&E+조이너리",con:"대형 프레스티지 프로젝트 지향, 프리미엄 미니멈",web:"depa.com"},
    {n:"BW Furniture (Bowyer Wick)",loc:"Jebel Ali, Dubai (13,000 sqm)",tier:"premium",grade:["high-end villa","hotel-commercial"],
-    brands:"가구·조이너리·업홀스터리·드레이퍼리·쿠션·소파",pro:"가구+업홀스터리+소프트퍼니싱 원스톱 제조 — 효율적 단일 소스 FF&E",con:"프로젝트/계약 스케일",web:"bw.ae"},
+    brands:"가구·조이너리·업홀스터리·드레이퍼리·쿠션·소파",pro:"가구+업홀스터리+소프트퍼니싱 원스톱 제조 — 효율적 단일 소스 FF&E",con:"프로젝트/계약 스케일",web:"bwfurniture.ae"},
    {n:"Aati (Al Tayer Group)",loc:"Dubai (1981~)",tier:"luxury",grade:["high-end villa","hotel-commercial"],
     brands:"Minotti·Roberto Cavalli·Versace·Fendi Casa + 인하우스 설계·패브릭/커튼",pro:"톱 유럽 디자이너 브랜드, 소프트퍼니싱 포함 풀 설계 서비스",con:"럭셔리 가격, 소매 주도(호텔 계약 조건 확인)",web:"aati.ae"},
    {n:"Marina Home Interiors",loc:"Dubai (1997~, 다수 쇼룸)",tier:"premium",grade:["mid-tier","high-end villa"],
-    brands:"프리미엄 라이프스타일 홈퍼니싱 (주거+호텔 FF&E)",pro:"통일감 있는 컬렉션, 따뜻한 미감 — 빌라/부티크 호텔",con:"소매 지향 — 고트래픽 내구성 확인",web:"marinahome.com"},
+    brands:"프리미엄 라이프스타일 홈퍼니싱 (주거+호텔 FF&E)",pro:"통일감 있는 컬렉션, 따뜻한 미감 — 빌라/부티크 호텔",con:"소매 지향 — 고트래픽 내구성 확인",web:"marinahomeinteriors.com"},
    {n:"Fabric Library",loc:"SZR 쇼룸 · Dubai Textile City 창고",tier:"premium",grade:["mid-tier","high-end villa","hotel-commercial"],
     brands:"Bru Textiles(벨기에) 계열 유통 — FibreGuard(스테인프리)·FR-One(방염)·Sansaar. ※Romo/Kvadrat 등 유럽 디자이너 밀 미취급 확인",pro:"✅웹 재검증(2026-07): FR-One 방염 계약 패브릭(BS 5867·NFPA 701·IMO) — 호텔 계약 대응 강함. 쇼룸 ☎ +971-4-323-3237",con:"유럽 럭셔리 밀 없음 — 디자이너 밀은 Aati 등 병행. '럭셔리'보다 계약/실용 포트폴리오",web:"fabriclibrary.com"},
    {n:"Al Kilani Fabrics",loc:"Abu Dhabi & Dubai",tier:"budget",grade:["apartment","mid-tier"],
@@ -764,7 +822,7 @@ const DATA = [
    {n:"Crate & Barrel",loc:"The Dubai Mall · MOE · Mirdif City Centre",tier:"premium",grade:["mid-tier","high-end villa"],
     brands:"컨템포러리 가구 + 홈웨어/데코",pro:"신뢰도 있는 컨템포러리 레인지, 몰 접근성·실물 확인",con:"메인스트림 스타일 — 울트라 럭셔리 맞춤엔 부적합",web:"crateandbarrel.com"},
    {n:"THE One",loc:"Mall of the Emirates · Dubai Hills 등",tier:"mid",grade:["apartment","mid-tier"],
-    brands:"자체 디자인 가구 + 홈데코/액세서리 (클래식~컨템포러리)",pro:"강한 자체 브랜드, 합리적 가격, 풀 홈데코",con:"맞춤/럭셔리급 아님, 대중적 스타일링",web:"theone.com"},
+    brands:"자체 디자인 가구 + 홈데코/액세서리 (클래식~컨템포러리)",pro:"강한 자체 브랜드, 합리적 가격, 풀 홈데코",con:"맞춤/럭셔리급 아님, 대중적 스타일링",web:"theone.ae"},
    {n:"Humanspace",src:"user",loc:"Dubai (쇼룸·오피스)",tier:"premium",grade:["mid-tier","hotel-commercial"],flag:true,map:"https://maps.app.goo.gl/wX9CuC821Fhu5wJRA",
     brands:"오피스/워크스페이스 컨트랙트 가구 — 좌석·데스크·수납·파티션 (Herman Miller/MillerKnoll 등 취급 추정)",pro:"★방문. 오피스·컨트랙트 가구 전문(주거 FF&E와 별개 축), 워크스페이스 솔루션",con:"🚩 정확 취급 브랜드 방문 시 확인. 오피스 중심 — 주거 럭셔리 가구는 별도",web:"humanspace.com"},
    {n:"Minotti Dubai (플래그십)",loc:"Jumeirah 3, Dubai (2024 오픈, 900sqm 2층 — 파트너 Al Tayer Insignia)",tier:"luxury",grade:["high-end villa","hotel-commercial"],
@@ -790,7 +848,7 @@ const DATA = [
   note:"부위별 시스템이 다름: 옥상=토치온/시트 멤브레인, 욕실·발코니=시멘트질(예: Mapelastic류), 지하·수조=크리스탈린, 수영장=별도. 견적 시 부위·시스템·보증연한·프라이머/보호층 확인. ★자재만큼 시공 품질이 중요 — 시공사 실적 확인. 트레이드 픽업 허브: Al Quoz·Ras Al Khor.",
   items:[
    {n:"Sika UAE",loc:"UAE (로컬 제조/유통)",tier:"premium",grade:["apartment","mid-tier","high-end villa","hotel-commercial"],
-    brands:"액체·시트 멤브레인·크리스탈린(WT-200)·실란트·시멘트질 방수 (글로벌 1위급)",pro:"풀 시스템 라인업·글로벌 신뢰도, 로컬 재고, 기술 지원 강함",con:"프리미엄 가격, 시스템별 시방 준수 필요",web:"sika.ae"},
+    brands:"액체·시트 멤브레인·크리스탈린(WT-200)·실란트·시멘트질 방수 (글로벌 1위급)",pro:"풀 시스템 라인업·글로벌 신뢰도, 로컬 재고, 기술 지원 강함",con:"프리미엄 가격, 시스템별 시방 준수 필요",web:"gcc.sika.com"},
    {n:"MAPEI UAE",loc:"UAE (로컬 제조)",tier:"premium",grade:["mid-tier","high-end villa","hotel-commercial"],
     brands:"Mapelastic 시멘트질 방수·자착식 멤브레인(Bitustick)·비튜멘 시트·타일 방수",pro:"욕실/발코니 시멘트질 방수 강함, 타일 접착+방수 시스템 통합",con:"프리미엄, 라인 다양 — 부위별 정확한 제품 선택 필요",web:"mapei.com/ae"},
    {n:"Fosroc (공인딜러)",loc:"딜러 경유 (예: Fort Specialties, Abu Dhabi)",tier:"premium",grade:["mid-tier","hotel-commercial"],flag:true,
@@ -893,7 +951,7 @@ DATA.forEach((c,i)=>{
   nav.appendChild(a);
 });
 (function(){const a=document.createElement('a');a.dataset.target='playbook';
-  a.innerHTML='<span>＋ 실무 플레이북</span><span class="n">★</span>';
+  a.innerHTML='<span>＋ 업체별 확인사항</span><span class="n">★</span>';
   a.onclick=()=>{document.getElementById('playbook').scrollIntoView({behavior:'smooth'});};
   nav.appendChild(a);})();
 
@@ -940,6 +998,7 @@ function buildCard(it, ownerId, borrowed){
         <a class="file-open" target="_blank" rel="noopener" style="display:none">자료 열기</a>
       </div>
       <input class="note-in" placeholder="메모 (자동 저장·동기화)">
+      <div class="fu-meta"></div>
     </div>`;
   return card;
 }
@@ -1008,9 +1067,11 @@ function updateNewCount(){
 function statusWeight(st){return st==='excluded'?3:st==='confirmed'?2:st==='quoting'?1:0;}
 function sortCards(){
   document.querySelectorAll('#content .grid').forEach(grid=>{
-    [...grid.children]
-      .sort((a,b)=>statusWeight(a.dataset.status)-statusWeight(b.dataset.status)||(+a.dataset.ord)-(+b.dataset.ord))
-      .forEach(c=>grid.appendChild(c));
+    const cur=[...grid.children];
+    const sorted=[...cur].sort((a,b)=>statusWeight(a.dataset.status)-statusWeight(b.dataset.status)||(+a.dataset.ord)-(+b.dataset.ord));
+    // 순서가 이미 같으면 DOM을 건드리지 않음 — 입력 중 포커스/커서 유지(주기 동기화 대비)
+    if(cur.every((c,i)=>c===sorted[i]))return;
+    sorted.forEach(c=>grid.appendChild(c));
   });
 }
 
@@ -1026,11 +1087,33 @@ function loadState(){
 function saveState(){try{localStorage.setItem(LS_KEY,JSON.stringify(STATE));}catch(e){}}
 let STATE=loadState();
 
+/* 내 이름 — 변경 기록(누가) 표시용. 이 기기에만 저장(기기별 1회 입력) */
+const NAME_KEY="uae_user_name";
+let myName=localStorage.getItem(NAME_KEY)||"";
+const userName=document.getElementById('userName'); userName.value=myName;
+userName.addEventListener('input',()=>{ myName=userName.value.trim(); localStorage.setItem(NAME_KEY,myName); });
+// 편집 시각·작성자 도장 — 항목에 t(시각)와 by(이름) 기록
+function stamp(k){ STATE[k]=STATE[k]||{}; STATE[k].t=Date.now(); if(myName)STATE[k].by=myName; }
+// 상대 시간 표기
+function relTime(t){ if(!t)return''; const s=(Date.now()-t)/1000;
+  if(s<60)return'방금 전'; if(s<3600)return Math.floor(s/60)+'분 전';
+  if(s<86400)return Math.floor(s/3600)+'시간 전'; return Math.floor(s/86400)+'일 전'; }
+// 상단 "마지막 업데이트: 이름 · N분 전"
+function updateLastUpdated(){
+  let best=null;
+  Object.values(STATE).forEach(s=>{ if(s&&s.t&&(!best||s.t>best.t))best=s; });
+  const el=document.getElementById('lastUpd');
+  if(el) el.textContent=best?`마지막 업데이트: ${best.by?best.by+' · ':''}${relTime(best.t)}`:'';
+}
+
 const FIELD_MAP={'f-contact':'contact','f-phone':'phone','f-price':'price','f-lead':'lead','f-moq':'moq','f-cert':'cert','f-file':'file','note-in':'note'};
 const progress=document.getElementById('progress'), progfill=document.getElementById('progfill');
 function statusOf(key){const s=STATE[key];return (s&&s.status)||'';}
 function styleSel(sel){sel.className='status-sel'+(sel.value?' '+sel.value:'');}
-function setVal(card,sel,v){const el=card.querySelector(sel);if(el)el.value=v||'';}
+// 편집 중인(포커스된) 칸은 덮어쓰지 않음 — 주기적 동기화가 입력을 방해하지 않도록
+function setVal(card,sel,v){const el=card.querySelector(sel);if(el&&el!==document.activeElement)el.value=v||'';}
+// 카드별 "최근: 이름 · N분 전"
+function setMeta(card,s){const m=card.querySelector('.fu-meta');if(m)m.textContent=(s&&s.t)?`최근: ${s.by?s.by+' · ':''}${relTime(s.t)}`:'';}
 
 function updateProgress(){
   let gAct=0,gTot=0,gConf=0;
@@ -1065,11 +1148,11 @@ function restoreCards(){
     setVal(card,'.f-price',s.price); setVal(card,'.f-lead',s.lead);
     setVal(card,'.f-moq',s.moq); setVal(card,'.f-cert',s.cert);
     setVal(card,'.f-file',s.file); setVal(card,'.note-in',s.note);
-    card.classList.toggle('reviewed',!!s.reviewed);
+    card.classList.toggle('reviewed',!!s.reviewed); setMeta(card,s);
     const fo=card.querySelector('.file-open');
     if(fo){ if(s.file){fo.href=s.file;fo.style.display='';} else fo.style.display='none'; }
   });
-  updateProgress(); updateNewCount(); sortCards();
+  updateProgress(); updateNewCount(); updateLastUpdated(); sortCards();
 }
 // 겹쳐 표시된 같은 업체 카드들(같은 key)을 동기화 — 편집 중인 카드는 건드리지 않음
 function syncCards(key,exceptEl){
@@ -1083,7 +1166,7 @@ function syncCards(key,exceptEl){
     setVal(card,'.f-price',s.price); setVal(card,'.f-lead',s.lead);
     setVal(card,'.f-moq',s.moq); setVal(card,'.f-cert',s.cert);
     setVal(card,'.f-file',s.file); setVal(card,'.note-in',s.note);
-    card.classList.toggle('reviewed',!!s.reviewed);
+    card.classList.toggle('reviewed',!!s.reviewed); setMeta(card,s);
     const fo=card.querySelector('.file-open');
     if(fo){ if(s.file){fo.href=s.file;fo.style.display='';} else fo.style.display='none'; }
   });
@@ -1092,25 +1175,25 @@ function syncCards(key,exceptEl){
 content.addEventListener('click',e=>{
   if(!e.target.classList.contains('btn-review'))return;
   const card=e.target.closest('.card'), k=card.dataset.key;
-  STATE[k]=STATE[k]||{}; STATE[k].reviewed=true; STATE[k].t=Date.now();
-  card.classList.add('reviewed'); syncCards(k,e.target);
-  saveState(); updateNewCount(); scheduleSync();
+  stamp(k); STATE[k].reviewed=true;
+  card.classList.add('reviewed'); syncCards(k,e.target); setMeta(card,STATE[k]);
+  saveState(); updateNewCount(); updateLastUpdated(); scheduleSync();
   if(newOnly)applyFilter();
 });
 content.addEventListener('change',e=>{
   if(!e.target.classList.contains('status-sel'))return;
   const card=e.target.closest('.card'), k=card.dataset.key, v=e.target.value;
-  STATE[k]=STATE[k]||{}; STATE[k].status=v; STATE[k].t=Date.now();
-  card.dataset.status=v; styleSel(e.target); syncCards(k,e.target);
-  saveState(); updateProgress(); scheduleSync(); sortCards();
+  stamp(k); STATE[k].status=v;
+  card.dataset.status=v; styleSel(e.target); syncCards(k,e.target); setMeta(card,STATE[k]);
+  saveState(); updateProgress(); updateLastUpdated(); scheduleSync(); sortCards();
   if(fStatus.value)applyFilter();
 });
 content.addEventListener('input',e=>{
   const cls=[...e.target.classList].find(c=>FIELD_MAP[c]); if(!cls)return;
   const card=e.target.closest('.card'), k=card.dataset.key;
-  STATE[k]=STATE[k]||{}; STATE[k][FIELD_MAP[cls]]=e.target.value; STATE[k].t=Date.now();
+  stamp(k); STATE[k][FIELD_MAP[cls]]=e.target.value;
   if(cls==='f-file'){const fo=card.querySelector('.file-open'); if(e.target.value){fo.href=e.target.value;fo.style.display='';}else fo.style.display='none';}
-  saveState(); syncCards(k,e.target); scheduleSync();
+  saveState(); syncCards(k,e.target); setMeta(card,STATE[k]); updateLastUpdated(); scheduleSync();
 });
 
 document.getElementById('btnExport').onclick=()=>{
@@ -1232,6 +1315,10 @@ btnDrive.onclick=()=>{
 if(GOOGLE_CLIENT_ID) setStatus('로그인하려면 클릭 →');
 // 팀 공유: 창을 다시 보면 최신 데이터 자동 반영(20초 쓰로틀)
 window.addEventListener('focus',()=>{ if(accessToken && Date.now()-lastSync>20000) driveSync(); });
+// 팀 공유: 창을 계속 켜둬도 20초마다 자동으로 최신본을 당겨와 반영(다른 사람 변경이 바로 보임)
+setInterval(()=>{ if(accessToken && document.visibilityState==='visible' && Date.now()-lastSync>20000) driveSync(); }, 20000);
+// 상대시간(방금 전/N분 전)이 시간 지나도 갱신되도록 주기적으로 표시만 새로고침
+setInterval(()=>{ updateLastUpdated(); document.querySelectorAll('.card').forEach(c=>setMeta(c,STATE[c.dataset.key]||{})); }, 60000);
 
 const obs=new IntersectionObserver(es=>{
   es.forEach(e=>{if(e.isIntersecting){
