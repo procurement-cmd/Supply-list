@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UAE 인테리어 자재 공급망 매뉴얼 v3</title>
+<title>UAE 인테리어 공급망 매뉴얼 v3</title>
 <style>
   /* ===== HON 애플 스타일 디자인 시스템 (Design_Guidelines_HON_Apple.md) ===== */
   :root{
     --blue:#0066cc; --blue-focus:#0071e3; --blue-t:#e8f1fb; --blue-deep:#004a99; --blue-deep-t:#d6e8fa;
-    --ink:#1d1d1f; --ink-80:#333333; --ink-48:#7a7a7a;
+    --ink:#1d1d1f; --ink-80:rgba(29,29,31,0.8); --ink-48:rgba(29,29,31,0.48);
     --canvas:#ffffff; --parchment:#f5f5f7; --pearl:#fafafc;
-    --hairline:#e0e0e0; --divider:#f0f0f0; --nav-black:#000000;
+    --hairline:rgba(0,0,0,0.12); --divider:rgba(0,0,0,0.06); --nav-black:#000000;
     --ok:#248a3d; --ok-t:#eaf6ee;
     --chk:#b06000; --chk-t:#fbf1e2;
     --bad:#d70015; --bad-t:#fdeeee;
@@ -29,6 +29,11 @@
     padding:0 max(5vw,32px);font-size:12px;gap:16px}
   .gnav .co{font-weight:600;letter-spacing:.02em}
   .gnav .proj{margin-left:auto;color:rgba(255,255,255,.72)}
+  .gnav-home{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;padding:0;
+    background:transparent;border:none;color:rgba(255,255,255,.82);cursor:pointer;border-radius:9999px;transition:transform .1s}
+  .gnav-home svg{width:19px;height:19px}
+  .gnav-home:hover{color:#fff;background:rgba(255,255,255,.12)}
+  .gnav-home:active{transform:scale(.92)}
   /* 헤더 타일 */
   header.top{padding:56px max(5vw,32px) 40px;background:var(--canvas)}
   .eyebrow{font-size:14px;font-weight:600;letter-spacing:-.224px;color:var(--ink-48);margin-bottom:10px}
@@ -54,6 +59,9 @@
   nav.side a.nav-home .n{color:var(--blue)}
   nav.side a .n{font-size:12px;color:var(--ink-48)}
   nav.side a .n b{color:var(--ok);font-weight:600}
+  nav.side .nav-group{padding:15px 12px 5px;font-size:10.5px;font-weight:600;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--blue);cursor:pointer;opacity:.85}
+  nav.side .nav-group:hover{opacity:1}
   main{flex:1;min-width:0}
   /* 스크롤 시 따라다니는 홈(맨 위로) 버튼 */
   .gotop{position:fixed;right:24px;bottom:24px;z-index:60;display:none;align-items:center;gap:6px;
@@ -63,10 +71,22 @@
   .gotop:active{transform:scale(.95)}
   .gotop.show{display:inline-flex}
   /* 서브내비 (sticky) — 검색·필터, 반투명 블러 */
-  .controls{position:sticky;top:0;z-index:40;display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+  .controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;
     padding:12px max(24px,2vw);background:rgba(245,245,247,.8);
     backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);
     border-bottom:1px solid rgba(0,0,0,.08)}
+  /* 대분류 전환 바 (드릴다운) — 그룹 뷰에서만 표시 */
+  .view-hidden{display:none!important}
+  #groupTabs{position:sticky;top:0;z-index:46;display:none;gap:8px;align-items:center;overflow-x:auto;
+    padding:10px max(24px,2vw);background:rgba(255,255,255,.9);backdrop-filter:saturate(180%) blur(20px);
+    -webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid rgba(0,0,0,.1);white-space:nowrap}
+  #groupTabs .gt-btn{flex:none;font-family:inherit;font-size:13.5px;font-weight:600;color:var(--ink-80);
+    background:#fff;border:1px solid rgba(0,0,0,.12);border-radius:9999px;padding:8px 15px;cursor:pointer;transition:transform .1s}
+  #groupTabs .gt-btn:active{transform:scale(.95)}
+  #groupTabs .gt-btn.active{background:var(--blue);border-color:var(--blue);color:#fff}
+  #groupTabs .gt-home{color:var(--blue);display:inline-flex;align-items:center;gap:5px}
+  #groupTabs .gt-home svg{width:16px;height:16px}
+  #groupTabs .gt-sep{flex:none;width:1px;height:20px;background:rgba(0,0,0,.12);margin:0 2px}
   .controls input[type=search]{flex:1;min-width:220px;background:var(--canvas);border:1px solid var(--hairline);
     color:var(--ink);padding:9px 16px;border-radius:9999px;font-size:14px;font-family:inherit}
   .controls input[type=search]::placeholder{color:var(--ink-48)}
@@ -97,8 +117,33 @@
   .dot{width:9px;height:9px;border-radius:50%;display:inline-block}
   /* 카테고리 = 풀블리드 타일 (흰 ↔ 연회색 교대) */
   .cat-block{padding:44px max(24px,2vw) 52px;scroll-margin-top:64px}
-  #content .cat-block:nth-child(even){background:var(--parchment)}
+  .cat-block.alt{background:var(--parchment)}
   #playbook{background:var(--parchment)}
+  /* 최상위 대분류 헤더 */
+  .group-head{padding:52px max(24px,2vw) 0;scroll-margin-top:52px}
+  .group-title{display:inline-block;font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--blue);border-bottom:2px solid var(--blue);padding-bottom:9px}
+  /* 메인 대분류 허브 카드 4개 */
+  .group-hub{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding:8px max(5vw,32px) 24px}
+  .ghub-card{background:var(--canvas);border:1px solid var(--hairline);border-radius:18px;padding:22px 20px;
+    cursor:pointer;display:flex;flex-direction:column;gap:8px;min-height:150px;transition:transform .1s,border-color .15s}
+  .ghub-card:hover{border-color:var(--blue)}
+  .ghub-card:active{transform:scale(.98)}
+  .ghub-card .gh-ic{width:32px;height:32px;color:var(--blue)}
+  .ghub-card .gh-ic svg{width:32px;height:32px}
+  .ghub-card .gh-t{font-size:20px;font-weight:600;letter-spacing:-.3px;color:var(--ink)}
+  .ghub-card .gh-en{font-size:11.5px;color:var(--ink-48);text-transform:uppercase;letter-spacing:.06em;margin-top:-4px}
+  .ghub-card .gh-n{font-size:13px;color:var(--ink-48);margin-top:auto}
+  @media(max-width:900px){.group-hub{grid-template-columns:repeat(2,1fr);padding:8px 16px 16px;gap:12px}
+    .ghub-card{min-height:120px;padding:18px 16px}}
+  @media(max-width:420px){.group-hub{grid-template-columns:1fr}}
+  /* 그룹 안의 카테고리 카드 그리드 (2단계) */
+  .cat-hub{padding:16px max(24px,2vw) 28px}
+  .cat-hub .ghub-card{min-height:0;gap:5px}
+  .cat-hub .ghub-card .gh-t{font-size:17px}
+  .catbar{display:none;align-items:center;gap:6px;margin:16px max(24px,2vw) 0;font-family:inherit;font-size:14px;
+    font-weight:600;color:var(--blue);background:none;border:none;cursor:pointer;padding:4px 0;width:fit-content}
+  .catbar::before{content:"‹";font-size:19px;line-height:1;margin-top:-2px}
   .cat-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
   .cat-head h2{font-size:28px;font-weight:600;letter-spacing:-.4px;line-height:1.14;color:var(--ink)}
   .cat-head .ko{color:var(--ink-48);font-size:14px}
@@ -117,12 +162,12 @@
   .cat-refs>summary:hover{color:var(--ink-80)}
   .cat-refs .rl-body{padding:0 22px 16px}
   .cat-refs .sep{color:var(--hairline);margin:0 8px}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:20px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
   /* 카드 */
   .card{background:var(--canvas);border:1px solid var(--hairline);border-radius:18px;padding:24px 26px 20px;
     display:flex;flex-direction:column;position:relative;transition:box-shadow .15s}
   .card:hover{box-shadow:0 1px 2px rgba(0,0,0,.03),0 2px 8px rgba(0,0,0,.03)}
-  .card h3{font-size:17px;font-weight:600;letter-spacing:-.2px;line-height:1.3;color:var(--ink);margin-bottom:4px;
+  .card h3{font-size:21px;font-weight:600;letter-spacing:-.3px;line-height:1.12;color:var(--ink);margin-bottom:5px;
     display:flex;align-items:center;gap:8px;flex-wrap:wrap}
   .status-pill{display:none}
   .card .loc{font-size:13px;margin-bottom:10px}
@@ -136,6 +181,7 @@
   .b-maker{background:var(--ok-t);border-color:transparent;color:var(--ok)}
   .b-trader{background:var(--chk-t);border-color:transparent;color:var(--chk)}
   .b-check{color:var(--ink-48)}
+  .b-tag{background:var(--blue-t);border-color:transparent;color:var(--blue);font-weight:600}
   /* NEW 배지 + 확인 버튼 — 새로 추가된 업체 리뷰 워크플로 */
   .b-new{background:var(--ink);color:#fff;border-color:transparent;font-weight:600;letter-spacing:.02em}
   .card.reviewed .b-new{display:none}
@@ -153,18 +199,18 @@
   .card .row .k.con{color:var(--bad)}
   /* 진행 상태 — 좌측 스트립 + 상태 셀렉트 틴트 (기능색 전용) */
   .status-sel{font-family:inherit;appearance:none;-webkit-appearance:none;font-size:12px;font-weight:600;
-    border-radius:9999px;padding:6px 14px;border:1px solid var(--hairline);background:var(--canvas);color:var(--ink-48);cursor:pointer}
-  .card[data-status="contacted"]{border-left:3px solid var(--blue);background:var(--blue-t)}
-  .status-sel.contacted{background:var(--blue-t);color:var(--blue);border-color:transparent}
-  .card[data-status="visited"]{border-left:3px solid var(--blue-deep);background:var(--blue-deep-t)}
-  .status-sel.visited{background:var(--blue-deep-t);color:var(--blue-deep);border-color:transparent}
-  .card[data-status="quoting"]{border-left:3px solid var(--chk);background:var(--chk-t)}
-  .status-sel.quoting{background:var(--chk-t);color:var(--chk);border-color:transparent}
-  .card[data-status="confirmed"]{border-left:3px solid var(--ok);background:var(--ok-t)}
-  .status-sel.confirmed{background:var(--ok-t);color:var(--ok);border-color:transparent}
-  .card[data-status="excluded"]{border-left:3px solid var(--bad);background:var(--bad-t);opacity:.7}
-  .status-sel.excluded{background:var(--bad-t);color:var(--bad);border-color:transparent}
+    border-radius:9999px;padding:6px 14px;border:1px solid rgba(0,0,0,0.14);background:transparent;color:var(--ink-48);cursor:pointer}
+  /* 카드 배경 = 방문 상태 (스펙 §1 핵심 규칙): 안 본 곳=흰색 / 본 곳=회색 / 확정=연파랑 / 제외=연핑크 */
+  .card[data-status="contacted"]{background:var(--parchment);border-color:rgba(0,0,0,0.05)}
+  .card[data-status="quoting"]{background:var(--parchment);border-color:rgba(0,0,0,0.05)}
+  .card[data-status="confirmed"]{background:rgba(0,102,204,0.05);border-color:rgba(0,102,204,0.22)}
+  .card[data-status="excluded"]{background:#fef5f7;border-color:rgba(209,74,110,0.16);opacity:.9}
   .card[data-status="excluded"] h3{text-decoration:line-through;color:var(--ink-48)}
+  /* 상태 pill — 파랑 강도가 진행도: 테두리(컨택/방문) → 옅은 채움(견적중) → 완전 채움(확정) */
+  .status-sel.contacted,.status-sel.visited{color:var(--blue);border-color:rgba(0,102,204,0.35);background:transparent}
+  .status-sel.quoting{color:var(--blue);border-color:rgba(0,102,204,0.4);background:rgba(0,102,204,0.08)}
+  .status-sel.confirmed{color:#fff;border-color:var(--blue);background:var(--blue)}
+  .status-sel.excluded{color:#a0a0a0;border-color:rgba(0,0,0,0.10);background:transparent}
   /* 상태 카드의 입력칸은 틴트 위에서도 구분되게 흰색으로 */
   .card[data-status] .fu-fields input,.card[data-status] .note-in{background:#fff}
   /* 팔로우업 */
@@ -191,10 +237,10 @@
   /* 카테고리 헤더 상태 칩 — 글자색만 */
   .chip{font-size:12px;padding:2px 10px;border-radius:9999px;border:1px solid var(--hairline);background:var(--canvas);color:var(--ink-48);margin-left:2px}
   .chip.c-contacted{color:var(--blue)}
-  .chip.c-visited{color:var(--blue-deep)}
-  .chip.c-quoting{color:var(--chk)}
-  .chip.c-confirmed{color:var(--ok)}
-  .chip.c-excluded{color:var(--bad)}
+  .chip.c-visited{color:var(--blue)}
+  .chip.c-quoting{color:var(--blue)}
+  .chip.c-confirmed{color:#fff;background:var(--blue);border-color:var(--blue)}
+  .chip.c-excluded{color:#a0a0a0}
   /* 플레이북 */
   .pb-grid,.pb-cl{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin-bottom:20px}
   .pb-card{background:var(--canvas);border:1px solid var(--hairline);border-radius:18px;padding:24px 26px}
@@ -211,18 +257,103 @@
     font-size:12px;color:var(--ink-48);line-height:1.6}
   footer b{color:var(--ink-80);font-weight:600}
   .hidden{display:none!important}
-  @media(max-width:820px){.layout{flex-direction:column}
-    nav.side{width:auto;flex:auto;position:static;display:flex;flex-wrap:wrap;max-height:none;
-      border-right:none;border-bottom:1px solid var(--divider)}
-    nav.side a{flex:auto}
-    header.top h1{font-size:34px}}
+  /* ===== 데스크톱 필터 칩 패널 (스펙 §4·§5) — select는 상태 보관용으로 숨김 ===== */
+  .controls select{display:none}
+  .desk-filters{padding:12px max(24px,2vw) 2px}
+  .df-row{display:flex;align-items:flex-start;gap:14px;margin-bottom:9px}
+  .df-row .df-label{flex:0 0 116px;font-size:11.5px;font-weight:600;color:var(--ink-48);
+    text-transform:uppercase;letter-spacing:.02em;padding-top:8px}
+  .df-chips{display:flex;flex-wrap:wrap;gap:8px}
+  @media(max-width:820px){ .desk-filters{display:none} }
+  /* ===== 우측 사이드바 (스펙 §5: 진행현황 카드 + 범례 카드) — 데스크톱 전용 ===== */
+  .rightbar{display:none}
+  @media(min-width:821px){
+    .rightbar{display:block;flex:0 0 296px;width:296px;padding:24px 20px 48px;
+      position:sticky;top:0;align-self:flex-start;max-height:100vh;overflow:auto;border-left:1px solid var(--divider)}
+    .rb-card{background:var(--canvas);border:1px solid var(--hairline);border-radius:18px;padding:18px;margin-bottom:16px}
+    .rb-card .rb-t{font-size:11.5px;font-weight:600;color:var(--ink-48);text-transform:uppercase;letter-spacing:.02em;margin-bottom:13px}
+    .rightbar .controls2{flex-direction:column;align-items:stretch;gap:10px;padding:0}
+    .rightbar .controls2 .progress{white-space:normal}
+    .rightbar .progbar{max-width:none;width:100%;margin-bottom:2px}
+    .rightbar .controls2 .btn,.rightbar .controls2 .name-in{width:100%}
+    .rightbar .last-upd,.rightbar .sync-status{white-space:normal}
+    .rightbar .legend{flex-direction:column;align-items:flex-start;gap:8px;padding:0;font-size:12px}
+  }
+  /* ===== 모바일 전용 컴포넌트 (스펙 §5) — 데스크톱에선 숨김 ===== */
+  .mfilter,.mchips,#mtabbar{display:none}
+  /* 바텀시트 — 항상 DOM에 있으나 화면 밖/투명; 모바일에서만 .open */
+  .msheet-ov{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.38);opacity:0;pointer-events:none;transition:opacity .2s}
+  .msheet-ov.open{opacity:1;pointer-events:auto}
+  .msheet{position:fixed;left:0;right:0;bottom:0;z-index:81;background:#fff;border-radius:24px 24px 0 0;
+    max-height:82vh;overflow:auto;transform:translateY(101%);transition:transform .26s cubic-bezier(.32,.72,0,1);
+    padding:0 20px calc(18px + env(safe-area-inset-bottom))}
+  .msheet.open{transform:translateY(0)}
+  .msheet .grab{width:38px;height:5px;border-radius:9999px;background:rgba(0,0,0,.18);margin:10px auto 2px}
+  .msheet h4{font-size:12px;font-weight:600;color:var(--ink-48);margin:18px 0 9px}
+  .msheet .schips{display:flex;flex-wrap:wrap;gap:8px}
+  .schip{font-family:inherit;font-size:13.5px;color:var(--ink);background:#fff;border:1px solid rgba(0,0,0,.12);
+    border-radius:9999px;padding:8px 15px;cursor:pointer;transition:transform .1s}
+  .schip:active{transform:scale(.95)}
+  .schip.sel{border:2px solid var(--blue);padding:7px 14px;font-weight:600;color:var(--blue)}
+  .msheet .sheet-foot{position:sticky;bottom:0;background:#fff;padding:14px 0 2px;margin-top:10px;border-top:1px solid var(--divider)}
+  .msheet .view-btn{width:100%;height:48px;border:none;border-radius:9999px;background:var(--blue);color:#fff;
+    font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;transition:transform .1s}
+  .msheet .view-btn:active{transform:scale(.98)}
+  .msheet .sheet-reset{display:block;margin:9px auto 0;background:none;border:none;color:var(--ink-48);
+    font-family:inherit;font-size:13px;cursor:pointer;text-decoration:underline}
+  @media(max-width:820px){
+    .layout{flex-direction:column}
+    nav.side{display:none}
+    .gotop{display:none!important}
+    body{padding-bottom:64px}
+    header.top{padding:34px 20px 22px}
+    header.top h1{font-size:30px}
+    header.top .lede{font-size:16px}
+    /* 프로스티드 검색 바 (스펙 §4) */
+    .controls{gap:8px;padding:10px 16px;background:rgba(255,255,255,.82);
+      backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);
+      border-bottom:1px solid rgba(0,0,0,.12)}
+    .controls select{display:none}
+    .controls input[type=search]{min-width:0;flex:1 1 auto;height:44px}
+    .mfilter{display:inline-flex;align-items:center;gap:7px;flex:none;height:44px;font-family:inherit;
+      font-size:14px;font-weight:600;color:var(--ink);background:#fff;border:1px solid rgba(0,0,0,.12);
+      border-radius:9999px;padding:0 15px;cursor:pointer;transition:transform .1s}
+    .mfilter:active{transform:scale(.95)}
+    .mfilter.act{background:var(--blue);border-color:var(--blue);color:#fff}
+    .mfilter .fbadge{min-width:18px;height:18px;padding:0 5px;border-radius:9999px;background:#fff;color:var(--blue);
+      font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+    .mchips{display:flex;flex-wrap:wrap;gap:6px;padding:10px 16px 0}
+    .mchips:empty{display:none}
+    .mchips .mc{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;background:var(--ink);color:#fff;
+      border-radius:9999px;padding:5px 6px 5px 12px}
+    .mchips .mc b{font-weight:400;opacity:.55;margin-right:-3px}
+    .mchips .mc .x{width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.18);
+      display:inline-flex;align-items:center;justify-content:center;font-size:11px;line-height:1;cursor:pointer}
+    .controls2{gap:8px;padding:12px 16px 4px}
+    .legend{display:none}
+    .cat-block{padding:30px 16px 34px}
+    .grid{grid-template-columns:1fr;gap:14px}
+    .card{padding:20px 20px 18px}
+    .card h3{font-size:19px}
+    .cat-head h2{font-size:23px}
+    /* 하단 탭바 (스펙 §5) */
+    #mtabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:70;height:64px;
+      background:rgba(255,255,255,.9);backdrop-filter:saturate(180%) blur(20px);
+      -webkit-backdrop-filter:saturate(180%) blur(20px);border-top:1px solid rgba(0,0,0,.12);
+      padding-bottom:env(safe-area-inset-bottom)}
+    #mtabbar button{flex:1;background:none;border:none;font-family:inherit;cursor:pointer;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+      color:var(--ink-48);font-size:10.5px;font-weight:600}
+    #mtabbar button svg{width:24px;height:24px}
+    #mtabbar button.active{color:var(--blue)}
+  }
 </style>
 </head>
 <body>
-<div class="gnav"><span class="co">HON</span><span class="proj">UAE 인테리어 자재 공급망 매뉴얼</span></div>
+<div class="gnav"><button class="gnav-home" id="gnavHome" type="button" title="맨 위로 (홈)" aria-label="홈"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11 L12 4 L20 11"/><path d="M6 9.5 V20 H18 V9.5"/></svg></button><span class="co">HON</span><span class="proj">UAE 인테리어 공급망 매뉴얼</span></div>
 <header class="top">
-  <div class="eyebrow">공급망 디렉터리 · v3 · 2026.07 기준 · 19개 카테고리</div>
-  <h1>UAE 인테리어 자재 공급망 매뉴얼</h1>
+  <div class="eyebrow">자재 · 설계 · 시공 · 적산 디렉터리 · v3 · 2026.07 기준</div>
+  <h1>UAE 인테리어 공급망 매뉴얼</h1>
   <p class="lede">두바이 · 아부다비 · 샤르자 기준 등급별 공급업체 디렉터리와 <b>업체별 확인사항</b>. 조달(구매·계약) 실무용 시작 데이터베이스 — 카드의 <b>위치 링크</b>를 클릭하면 Google 지도가 열립니다.</p>
   <details class="disclaimer">
     <summary>이 디렉터리 읽는 법 ›</summary>
@@ -238,6 +369,9 @@
     </div>
   </details>
 </header>
+
+<section class="group-hub" id="hub" aria-label="대분류"></section>
+<nav id="groupTabs" aria-label="대분류 전환"></nav>
 
 <div class="layout">
   <nav class="side" id="nav"></nav>
@@ -261,8 +395,7 @@
       <select id="fStatus">
         <option value="">전체 진행상태</option>
         <option value="none">미정</option>
-        <option value="contacted">컨택함</option>
-        <option value="visited">방문함</option>
+        <option value="contacted">컨택·방문</option>
         <option value="quoting">견적 비교중</option>
         <option value="confirmed">확정</option>
         <option value="excluded">제외</option>
@@ -280,7 +413,25 @@
         <option value="trader">유통·재가공(마진↑)</option>
         <option value="check">확인 필요</option>
       </select>
+      <select id="fTag">
+        <option value="">공종 전체 (시공)</option>
+        <option value="턴키">턴키</option>
+        <option value="철거">철거</option>
+        <option value="Civil">Civil</option>
+        <option value="조이너리">조이너리</option>
+        <option value="밀워크">밀워크</option>
+        <option value="마블가공">마블가공</option>
+        <option value="MEP">MEP</option>
+        <option value="조경">조경</option>
+        <option value="가구">가구</option>
+      </select>
+      <button class="mfilter" id="mFilterBtn" type="button" aria-label="필터 열기">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><line x1="4" y1="8" x2="20" y2="8"/><line x1="4" y1="16" x2="20" y2="16"/><circle cx="14" cy="8" r="2.4" fill="currentColor" stroke="none"/><circle cx="9" cy="16" r="2.4" fill="currentColor" stroke="none"/></svg>
+        필터<span class="fbadge" id="mFbadge" style="display:none">0</span>
+      </button>
     </div>
+    <div class="desk-filters" id="deskFilters"></div>
+    <div class="mchips" id="mChips"></div>
     <div class="controls2">
       <span id="progress" class="progress">방문 0 / 0</span>
       <div class="progbar"><i id="progfill"></i></div>
@@ -295,18 +446,19 @@
       <button id="btnClear" class="btn btn-ghost" title="모든 방문·메모 초기화">초기화</button>
     </div>
     <div class="legend">
-      <span>진행:</span>
-      <span><span class="dot" style="background:#0066cc"></span>컨택함</span>
-      <span><span class="dot" style="background:#004a99"></span>방문함</span>
-      <span><span class="dot" style="background:#b06000"></span>견적 비교중</span>
-      <span><span class="dot" style="background:#248a3d"></span>확정</span>
-      <span><span class="dot" style="background:#d70015"></span>제외</span>
+      <span>진행(카드 배경):</span>
+      <span><span class="dot" style="background:#fff;border:1px solid rgba(0,0,0,.28)"></span>미정</span>
+      <span><span class="dot" style="background:#e2e2e7"></span>컨택·방문 / 견적중 (진행 중)</span>
+      <span><span class="dot" style="background:#0066cc"></span>확정</span>
+      <span><span class="dot" style="background:#f4c6d3"></span>제외</span>
       <span>·</span>
       <span>🚩 = 재확인 필요</span>
       <span>직거래·제조 = 단일마진</span>
       <span>유통·재가공 = 마진 이중</span>
       <span>(추정) = 설명 기반 자동판별</span>
     </div>
+    <button class="catbar" id="catBack" type="button"></button>
+    <section class="group-hub cat-hub" id="catHub" aria-label="카테고리"></section>
     <div id="content"></div>
 
     <section class="cat-block" id="projects">
@@ -480,6 +632,10 @@
       </div>
     </section>
   </main>
+  <aside class="rightbar" id="rightbar">
+    <div class="rb-card"><div class="rb-t">진행 현황 · 동기화</div><div id="rbProg"></div></div>
+    <div class="rb-card"><div class="rb-t">범례</div><div id="rbLegend"></div></div>
+  </aside>
 </div>
 
 <footer>
@@ -488,7 +644,25 @@
   허브: <b>Al Quoz·Ras Al Khor(두바이)</b> 쇼룸·자재 / <b>Mussafah(아부다비)</b>·<b>샤르자 Sajaa·Hamriyah</b> 석재·목재 가성비.
 </footer>
 
-<button id="gotop" class="gotop" title="맨 위로 이동">↑ 홈</button>
+<button id="gotop" class="gotop" title="맨 위로 이동"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M4 11 L12 4 L20 11"/><path d="M6 9.5 V20 H18 V9.5"/></svg>홈</button>
+
+<!-- 모바일 바텀시트 필터 -->
+<div class="msheet-ov" id="mSheetOv"></div>
+<div class="msheet" id="mSheet" role="dialog" aria-modal="true" aria-label="필터">
+  <div class="grab"></div>
+  <div id="mSheetBody"></div>
+  <div class="sheet-foot">
+    <button class="view-btn" id="mViewBtn" type="button">전체 보기</button>
+    <button class="sheet-reset" id="mResetBtn" type="button">필터 초기화</button>
+  </div>
+</div>
+<!-- 모바일 하단 탭바 -->
+<nav id="mtabbar" aria-label="하단 내비게이션">
+  <button data-tab="dir" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="5" rx="1.6"/><rect x="3.5" y="14" width="17" height="5" rx="1.6"/></svg><span>디렉터리</span></button>
+  <button data-tab="mat" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8 L20.5 7.4 V16.6 L12 21.2 L3.5 16.6 V7.4 Z"/><path d="M3.7 7.5 L12 12 L20.3 7.5 M12 12 V21"/></svg><span>자재</span></button>
+  <button data-tab="prog" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="8.2" opacity="0.3"/><path d="M12 3.8 a8.2 8.2 0 0 1 5.8 14" stroke-linecap="round"/></svg><span>진행</span></button>
+  <button data-tab="home" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11 L12 4 L20 11"/><path d="M6 9.5 V20 H18 V9.5"/></svg><span>홈</span></button>
+</nav>
 
 <script src="https://accounts.google.com/gsi/client" async></script>
 <script>
@@ -898,7 +1072,7 @@ const DATA = [
     brands:"럭셔리 맞춤 워크인 워드로브·가구 (중국계, 이탈리아 디자인팀 협업 표방) — 가죽 마감 공예, 대리석·유리·미러 연출",pro:"★사용자 언급. 하이엔드 워드로브 커스터마이징 특화, Ras Al Khor 쇼룸(10:00–20:00). ☎ +971-4-575-7802",con:"정식 웹사이트 없음(SNS·블로그만) — 레퍼런스·품질 방문 확인 필요",web:"radiumnobel.blogspot.com",ig:"https://www.instagram.com/radium_nobel/"},
    {n:"Intermetal",loc:"Dubai (1989~, 40만 sqft 공장)",tier:"premium",grade:["mid-tier","hotel-commercial"],
     brands:"계약 가구 제조 — 호텔·리조트·레스토랑·오피스·헬스케어",pro:"대형 로컬 제조=물량 캐파·커스텀·리드타임 통제",con:"계약/물량 포커스 — 부티크성 약함",web:"intermetal.com"},
-   {n:"Depa Interiors",loc:"UAE (1996~)",tier:"luxury",grade:["high-end villa","hotel-commercial"],
+   {n:"Depa Interiors",loc:"Dubai Investment Park 1, Dubai (1996~)",tier:"luxury",grade:["high-end villa","hotel-commercial"],also:["fitout-comm","fitout-resi"],tags:["턴키","조이너리","밀워크","가구"],
     brands:"턴키 인테리어 + 5성 호텔·궁전·박물관·공항 FF&E",pro:"최상급 호텔 혈통, 풀 FF&E+조이너리",con:"대형 프레스티지 프로젝트 지향, 프리미엄 미니멈",web:"depa.com"},
    {n:"BW Furniture (Bowyer Wick)",loc:"Jebel Ali, Dubai (13,000 sqm)",tier:"premium",grade:["high-end villa","hotel-commercial"],
     brands:"가구·조이너리·업홀스터리·드레이퍼리·쿠션·소파",pro:"가구+업홀스터리+소프트퍼니싱 원스톱 제조 — 효율적 단일 소스 FF&E",con:"프로젝트/계약 스케일",web:"bwfurniture.ae"},
@@ -935,7 +1109,9 @@ const DATA = [
    {n:"The Rug Company",src:"user",added:"2026-07-07",loc:"Villa 70 Al Wasl Rd, Jumeirah · Unit G65 Al Serkal Ave, Al Quoz 1, Dubai",tier:"luxury",grade:["high-end villa","hotel-commercial"],supply:"trader",
     maps:[{l:"Bungalow · Al Wasl Rd",q:"The Rug Company Bungalow Al Wasl Road Dubai"},{l:"Al Serkal Avenue",q:"The Rug Company Al Serkal Avenue Al Quoz Dubai"}],
     brands:"핸드메이드 프리미엄 러그 (디자이너 협업 컬렉션) + 큐레이티드 액세서리 — 중동 첫 플래그십",pro:"★Palm 4601·Murooj 572 카펫 지정 브랜드. 글로벌 명품 러그 본사 직영, 두바이 2개 거점, ☎ +971 4 379 1217",con:"고가, 러그 단일 카테고리",web:"ae.therugcompany.com"},
-   {n:"Spencer Interiors & Contracting",src:"user",added:"2026-07-07",loc:"본사·쇼룸: Icon Tower 9–10F(Unit 901), Barsha Heights(TECOM), Dubai · 지역오피스: Mussafah, Abu Dhabi · 창고: 86 St, Dubai",tier:"premium",grade:["mid-tier","high-end villa","hotel-commercial"],also:["kitchen"],
+   {n:"Loom Collection",src:"user",added:"2026-07-07",loc:"Warehouse 17, Al Hawai Compound, Dubai",tier:"premium",grade:["apartment","mid-tier","high-end villa"],supply:"trader",map:"https://maps.app.goo.gl/EHck7kx4e4GrwsUG7",
+    brands:"큐레이티드 가구·홈데코 + 러그(핸드우븐 실크·울·코튼) — 호주·스칸디나비아 디자인 감성 (2019~, The Loom Collection Furniture Trading LLC)",pro:"★사용자 추가·웹검증. 합리적 가격대 스타일 가구+러그, 10만 sqft 창고·두바이 3일 화이트글러브 배송",con:"수입 리테일러(자체 제조 아님) — 초럭셔리 맞춤보다 스타일링 완제품 중심. ※유사명 'Lush Loom'(lushloom.ae)은 별개 업체",web:"loomcollection.com",ig:"https://www.instagram.com/the_loom_collection/"},
+   {n:"Spencer Interiors & Contracting",src:"user",added:"2026-07-07",loc:"본사·쇼룸: Icon Tower 9–10F(Unit 901), Barsha Heights(TECOM), Dubai · 지역오피스: Mussafah, Abu Dhabi · 창고: 86 St, Dubai",tier:"premium",grade:["mid-tier","high-end villa","hotel-commercial"],also:["kitchen","fitout-comm"],tags:["턴키","조이너리"],
     maps:[{l:"본사 · Icon Tower(Barsha Heights)",q:"Spencer Interiors Contracting Icon Tower Barsha Heights Dubai"},{l:"아부다비 오피스 · Mussafah",q:"Spencer Interiors Contracting Mussafah Abu Dhabi"}],
     brands:"턴키 오피스·상업 인테리어 — 디자인+피트아웃+가구·조이너리 공급 (오피스·뱅킹·리테일·헬스케어·주거·호스피탈리티). 2005~, 900+ 프로젝트·400만 sqft+, 클라이언트 Kitopi·Veolia·Cisco·Servier·AG&P 등",pro:"★사용자 추가·웹검증. UAE 톱10급 오피스 턴키 피트아웃 컨트랙터 — 디자인·시공·가구 원스톱. British Chamber Dubai 회원, 두바이 본사+쇼룸·AD 오피스, ☎ +971 4 451 7700 · info@spenceri.com",con:"자재 공급사가 아니라 시공(피트아웃) 컨트랙터 — 개별 자재 조달과 성격 다름(견적은 턴키/프로젝트 단위). 오피스·상업 중심(럭셔리 빌라 FF&E는 별도)",web:"spenceri.com"},
   ]},
@@ -1017,16 +1193,144 @@ const DATA = [
    {n:"LuCell (대리점: Continental / Buddy UAE)",src:"user",added:"2026-07-07",loc:"판매: Buddy UAE, Aspin Commercial Tower, Sheikh Zayed Rd, Dubai (걸프 독점: Continental Office Equipment)",tier:"premium",grade:["high-end villa","hotel-commercial"],supply:"trader",flag:true,
     brands:"한국 제조 프리미엄 금고 — 지문(10개)·디지털·내화(내부 150℃ 이하)",pro:"★Palm 4601 Client selected(금고 SL-SV). 걸프 독점 대리점(Continental)·두바이 판매점 확인",con:"🚩 견적 'SL-SV' 정확 모델은 미확인(LU-3000·SL-SS 계열만 확인) — 모델 스펙 재확인",web:"continental-grp.com"},
   ]},
+
+ {id:"design-comm", title:"Design (Office / Commercial / Hospitality)", ko:"오피스·상업 설계", group:"design",
+  note:"오피스·리테일·F&B·호텔 등 상업 공간 인테리어 설계 스튜디오. 계약 범위(설계만 vs 설계+감리 vs design & build)와 유사 용도 레퍼런스를 확인하세요. ※주거도 하는 스튜디오는 '주거·빌라 설계'에 함께 표시됨.",
+  items:[
+   {n:"Bishop Design (Paul Bishop)",added:"2026-07-07",loc:"Pinnacle Bldg 111·112, Al Barsha, Dubai",tier:"luxury",grade:["high-end villa","hotel-commercial"],also:["design-resi"],
+    brands:"2004~ 럭셔리 hospitality·retail·F&B·commercial 설계 (스토리텔링 기반, 100+ 수상) — Uptown Tower 등",pro:"지역 최고 권위·수상 실적, 대형 hospitality 실행력. ☎ +971 4 399 0271",con:"초대형 상업·호텔 위주 — 소규모 단독 빌라엔 비용 부담",web:"wearebishopdesign.com",ig:"https://www.instagram.com/wearebishopdesign/"},
+   {n:"Roar (Pallavi Dean)",added:"2026-07-07",loc:"Alserkal Avenue, Al Quoz, Dubai",tier:"premium",grade:["mid-tier","high-end villa","hotel-commercial"],
+    brands:"workplace·F&B·hospitality·residential — 웰니스·문화 융합 (McKinsey Doha 등)",pro:"수상 다수 창의적 스튜디오, 웰니스·지속가능성 트렌드 리딩",con:"workplace·commercial 비중↑ — 순수 럭셔리 빌라 레퍼런스는 적음",web:"designbyroar.com",ig:"https://www.instagram.com/designbyroar/"},
+   {n:"XBD Collective",added:"2026-07-07",loc:"Building 06, Dubai Design District (d3), Dubai",tier:"premium",grade:["high-end villa","hotel-commercial"],also:["design-resi"],
+    brands:"건축+인테리어 통합 컨설턴시 — residential·hospitality·commercial 전 영역",pro:"건축·인테리어 원스톱, d3 소재로 접근성·네트워크. ☎ +971 4 553 5362",con:"상위 부티크 대비 브랜드 인지도는 다소 낮음",web:"xbdesign.com",ig:"https://www.instagram.com/xbd.collective/"},
+   {n:"LW Design Group",added:"2026-07-07",loc:"Design House, Al Sufouh 1, Dubai",tier:"luxury",grade:["hotel-commercial","high-end villa"],
+    brands:"1999~ 호텔 60여·레스토랑/바 200여 — Hyatt·Marriott·Hilton·Four Seasons·Jumeirah",pro:"글로벌 호텔 체인 레퍼런스 최상위, 140명+·해외지사",con:"hospitality 특화 — 개인 주거는 비주력",web:"lw.co",ig:"https://www.instagram.com/lw.designgroup/"},
+   {n:"4SPACE Design",added:"2026-07-07",loc:"HDS Business Centre 3508, JLT, Dubai",tier:"premium",grade:["mid-tier","high-end villa","hotel-commercial"],also:["design-resi"],
+    brands:"F&B·office·residential 럭셔리 인테리어 + 턴키 실행",pro:"디자인+시공 통합 실행력, F&B 포트폴리오. ☎ +971 4 438 5537",con:"상업 비중↑ — 하이엔드 빌라 브랜드색은 약함",web:"4space.ae",ig:"https://www.instagram.com/4spacedesign/"},
+   {n:"Kristina Zanic Consultants",added:"2026-07-07",loc:"Umm Suqeim 1, Dubai",tier:"luxury",grade:["hotel-commercial","high-end villa"],
+    brands:"국제 hospitality 인테리어 — 호텔·리조트·브랜디드 레지던스 (IHG 등)",pro:"국제 호텔·리조트 전문, 브랜디드 레지던스 경험. ☎ +971 4 288 2440",con:"hospitality 중심 — 순수 개인 빌라 비주력",web:"kristinazanic.com",ig:"https://www.instagram.com/kristinazanicconsultants/"},
+   {n:"H2R Design",added:"2026-07-07",loc:"Al Quoz Industrial 1, Dubai",tier:"premium",grade:["mid-tier","hotel-commercial","high-end villa"],
+    brands:"F&B·retail·hospitality 경험 디자인·브랜딩 크리에이티브 스튜디오",pro:"브랜딩+공간 결합, F&B·리테일 강점. ☎ +971 4 338 9005",con:"retail/F&B 색채↑ — 정통 럭셔리 빌라와 결이 다름",web:"h2rdesign.com",ig:"https://www.instagram.com/h2rdesign/"},
+   {n:"Godwin Austen Johnson (GAJ)",added:"2026-07-07",loc:"Al Barsha 1, Dubai",tier:"premium",grade:["hotel-commercial","high-end villa","mid-tier"],
+    brands:"1989~ UK계 대형 practice — 건축+인테리어+MEP+조명 (Dubai Creek G&YC·Bab Al Shams·One&Only Royal Mirage)",pro:"110명+ 다분야 통합팀, UAE 랜드마크 다수·오랜 신뢰도",con:"대형 종합 — 부티크 감성보단 규모·엔지니어링 지향",web:"godwinaustenjohnson.com",ig:"https://www.instagram.com/gajinteriors/"},
+  ]},
+
+ {id:"design-resi", title:"Design (Residential / Villa)", ko:"주거·빌라 설계", group:"design",
+  note:"빌라·아파트 등 주거 공간 인테리어 설계 스튜디오. 하이엔드 주거 레퍼런스·스타일 결과 계약 범위를 확인하세요. ※상업도 하는 스튜디오는 '오피스·상업 설계'에 함께 표시됨.",
+  items:[
+   {n:"Nikki Bisiker Interior Design",added:"2026-07-07",loc:"KOA Canvas, Nasab, Dubai (+ Al Barsha 1)",tier:"luxury",grade:["high-end villa","apartment"],
+    brands:"럭셔리 residential 인테리어·건축 — 맞춤 하이엔드 주거",pro:"고급 단독 주거(빌라) 전문성 뚜렷, 개인 클라이언트 밀착. ☎ +971 4 513 4486",con:"hospitality·대형 상업 레퍼런스 제한적",web:"nikkibisikerinteriordesign.com",ig:"https://www.instagram.com/nikkibisikerinteriordesign/"},
+   {n:"VSHD Design (Rania Hamed)",added:"2026-07-07",loc:"HDS Tower 1608, JLT, Dubai",tier:"premium",grade:["apartment","high-end villa","hotel-commercial"],also:["design-comm"],
+    brands:"2007~ 미니멀·디테일 중심 부티크 (residential·commercial)",pro:"강한 미니멀 아이덴티티, 부티크 밀착 서비스. ☎ +971 4 454 2580",con:"소규모 부티크 — 대형 동시수행 캐파 제한",web:"vshd.net",ig:"https://www.instagram.com/vshddesign/"},
+   {n:"Sneha Divias Atelier",added:"2026-07-07",loc:"Dubai (P.O.Box 33538) + Porto",tier:"premium",grade:["high-end villa","hotel-commercial","apartment"],flag:true,also:["design-comm"],
+    brands:"부티크 인테리어 아키텍처 — commercial·hospitality·residential, 가구·스타일링까지",pro:"감각적 부티크 디자인, 스타일링 통합. ☎ +971 4 352 0319",con:"🚩 자사 사이트에 상세 주소 미게시(PO Box만), 소규모 스튜디오",web:"snehadivias.com",ig:"https://www.instagram.com/snehadiviasatelier/"},
+   {n:"Anarchitect (Jonathan Ashmore)",added:"2026-07-07",loc:"Al Quoz, Dubai (+ London)",tier:"luxury",grade:["high-end villa","hotel-commercial"],flag:true,also:["design-comm"],
+    brands:"RIBA 건축가(2013) — 건축+인테리어, 절제된 럭셔리·재료/디테일 (Harding Boutique Hotel)",pro:"건축·인테리어 통합, 국제 비평 인정·컨텍스추얼 철학",con:"🚩 자사 사이트에 두바이 오피스 상세주소 미게시(미디어 소스 의존), 소규모",web:"anarchitect.com",ig:"https://www.instagram.com/anarchitect/"},
+   {n:"Algedra Interior Design",added:"2026-07-07",loc:"JBC 3, JLT, Dubai",tier:"premium",grade:["apartment","mid-tier","high-end villa"],
+    brands:"럭셔리 residential·commercial 인테리어+건축 (클래식~모던)",pro:"주거 전 범위 대응·접근성 좋음. ☎ +971 4 363 9703",con:"상위 부티크 대비 미디어·수상 약함 — 초고급 shortlist 시 검증",web:"algedra.ae",ig:"https://www.instagram.com/algedra/"},
+   {n:"Ivan Ogienko",src:"user",added:"2026-07-07",loc:"Dubai (+ Kyiv) — 개인 디자인 스튜디오",tier:"mid",grade:["apartment","high-end villa","hotel-commercial"],also:["design-comm"],
+    brands:"턴키 인테리어 디자인+시공(자체 컨트랙팅) — 아파트·빌라 중심 + 상업(살롱·스파·쇼룸·레스토랑). 두바이·키이우·발리 활동",pro:"★사용자 사용 업체. 두바이 실프로젝트(Marina Vista 등)·인스타 레퍼런스 활발",con:"두바이·키이우 이중 거점 개인 스튜디오(전용 두바이 오피스 주소 미공개) — 규모·계약조건 확인",web:"ivanogienko.com/en",ig:"https://www.instagram.com/ivan_ogienko_design/"},
+   {n:"Tellus Studio (조경 디자인)",src:"user",added:"2026-07-07",loc:"Dubai (조경 디자인 스튜디오)",tier:"mid",grade:["high-end villa","hotel-commercial"],tags:["조경"],flag:true,
+    brands:"조경(랜드스케이프) 디자인 스튜디오 — ★Murooj 빌라 조경 디자인 의뢰처(사장님 사용)",pro:"★사용자 실사용. 인스타 레퍼런스(@tellusstudio.design)로 스타일 확인",con:"🚩 인스타 기준 — 정확 웹/법인 확인 권장(동명 미국 Colorado 'tellUs Design'과 구분). 조경 설계라 인테리어 실내와 별개 스코프",ig:"https://www.instagram.com/tellusstudio.design/"},
+  ]},
+
+ {id:"fitout-comm", title:"Fit-out (Office / Commercial)", ko:"오피스·상업 시공", group:"construction",
+  note:"오피스·리테일·F&B·호텔 등 상업 공간 피트아웃 컨트랙터. 시공 계약(스코프·기성·하자보증) 단위. Civil Defence·안전·품질(ISO) 인증과 유사 규모 레퍼런스를 확인하세요. ※주거·빌라도 하는 업체는 '주거·빌라 시공'에 함께 표시됨(Depa·Spencer는 가구 카테고리에서 연결).",
+  items:[
+   {n:"Khansaheb Interiors",added:"2026-07-07",loc:"Dubai (Khansaheb, 1935~)",tier:"premium",grade:["hotel-commercial","apartment"],tags:["턴키","Civil","조이너리","MEP"],
+    brands:"인하우스 MEP·조이너리 핏아웃 — One Za'abeel The Link·Bab Al Shams (Design ME Fit-Out Powerlist 2025 1위)",pro:"90년 로컬 신뢰도, 라이브 운영환경 리모델링 강점, 1,000명+ 숙련인력",con:"대형 계약 위주 — 소형 발주 접근성 낮음",web:"khansahebcivilengineering.com"},
+   {n:"Al Tayer Stocks (ATS)",added:"2026-07-07",loc:"Dubai (Al Tayer Group, 1998~)",tier:"premium",grade:["hotel-commercial"],tags:["턴키","MEP","Civil"],
+    brands:"빌딩+인테리어 핏아웃+MEP+D&B (AED 1M~600M) — 코퍼레이트·헬스케어·호스피탈리티·리테일",pro:"25년+ 대기업 계열(Al Tayer Group), MEP 포함 풀스코프 딜리버리",con:"순수 주거·빌라보다 대형 커머셜·기관 중심. ※자사 사이트 리뉴얼 중('Coming Soon')이라 정보는 링크드인/직접 문의로",web:"altayerstocks.com"},
+   {n:"Havelock One Interiors",added:"2026-07-07",loc:"Al Barsha 1 · Dubai Airport Free Zone, Dubai (+ AD)",tier:"premium",grade:["hotel-commercial","mid-tier"],tags:["턴키","조이너리","가구"],
+    brands:"20년+ 턴키 핏아웃·자체 제조 — 리테일·F&B·호스피탈리티·커머셜",pro:"걸프 전역 확장망 + 자체 조이너리 제조공장",con:"초고급 주거보다 커머셜·리테일 비중↑",web:"havelockone.com"},
+   {n:"Summertown Interiors",added:"2026-07-07",loc:"JAFZA, Jebel Ali, Dubai (+ AD)",tier:"premium",grade:["hotel-commercial","mid-tier"],tags:["턴키"],
+    brands:"지속가능(LEED) 오피스 핏아웃 D&B — 20+ LEED 인증 프로젝트",pro:"친환경·LEED 역량과 인하우스 전문인력, 커머셜 오피스 강점. ☎ +971 4 805 3300",con:"하이엔드 주거·빌라 포트폴리오는 약함",web:"summertown.ae"},
+   {n:"ISG Middle East",added:"2026-07-07",loc:"Sheikh Zayed Rd (Sama Tower), Dubai",tier:"premium",grade:["hotel-commercial"],tags:["턴키"],
+    brands:"글로벌 기준 오피스·기술/헬스케어·호스피탈리티 핏아웃 (IADA 'Fit Out Contractor of the Year' 수상)",pro:"글로벌 스탠다드·고기술 오피스 핏아웃 리더",con:"주거 부문 취급 안 함(커머셜 오피스 전문)",web:"isgltd.com/ae"},
+   {n:"Fitout Bureau Interiors",added:"2026-07-07",loc:"Al Quoz Industrial 3, Dubai",tier:"mid",grade:["hotel-commercial","apartment"],also:["fitout-resi"],tags:["턴키","조이너리","MEP"],
+    brands:"10년+ 커머셜·주거 인테리어 디자인&핏아웃 솔루션",pro:"중가 커머셜/주거 핏아웃 대응. ☎ +971 55 439 3355",con:"브랜드 인지도·대형 레퍼런스는 상위권 대비 약함",web:"fitoutbureau.com"},
+   {n:"EMCORE Electromechanical",added:"2026-07-07",loc:"Al Nahda 2, Dubai",tier:"mid",grade:["hotel-commercial"],also:["fitout-resi"],tags:["MEP"],
+    brands:"MEP 전문(HVAC·전기·배관·BMS)·냉동설비 — 핏아웃의 기계전기 패키지 파트너 (주거·상업 공통)",pro:"소~대형 MEP 유지·시공 민첩 대응. ☎ +971 4 254 5422 (2009~, Dubai 26th St)",con:"🚩 MEP 전문 — 단독 턴키 부적합. ※자사 사이트 SSL 만료로 접속 불가(2026-07 확인) — 연락은 전화/LinkedIn",web:"emcoreme.com"},
+   {n:"Time Furniture",src:"user",added:"2026-07-07",loc:"Sharjah(Abu Shagara) 본거지 + Dubai 사무소",tier:"mid",grade:["mid-tier","high-end villa","hotel-commercial"],also:["fitout-resi"],tags:["턴키","철거","조이너리","밀워크","가구"],
+    brands:"턴키 피트아웃 + 자체 조이너리·가구 제작 (1991~) — upholstery·리노베이션·커튼·바닥까지 인하우스, 상업+주거",pro:"★사용자 사용 업체. 실속형 자체제작 피트아웃/조이너리, ☎ +971 6 559 1935(샤르자) · +971 4 269 3310(두바이)",con:"'철거'는 전문 철거가 아니라 피트아웃 부수 strip-out — 본질은 피트아웃·조이너리·가구 제조사",web:"timefurniture.ae",ig:"https://www.instagram.com/timefurnitureme/"},
+  ]},
+
+ {id:"fitout-resi", title:"Fit-out (Residential / Villa)", ko:"주거·빌라 시공", group:"construction",
+  note:"빌라·아파트 등 주거 공간 피트아웃·리노베이션 컨트랙터. 럭셔리 빌라는 마감·조이너리 디테일 레퍼런스, 리노베이션은 견적 투명성·공정관리를 확인하세요. ※오피스·상업도 하는 업체는 '오피스·상업 시공'에 함께 표시됨.",
+  items:[
+   {n:"Bond Interiors",added:"2026-07-07",loc:"Dubai Industrial City, Dubai (55만 sqft 생산)",tier:"luxury",grade:["high-end villa","hotel-commercial","apartment"],also:["fitout-comm"],tags:["턴키","조이너리","밀워크","마블가공","가구"],
+    brands:"1986~ 비스포크 럭셔리 핏아웃 — Dorchester Residences·ICONIC by Pininfarina·The Opus. 건축금속/유리/조명/FF&E 인하우스",pro:"초고급 주거·호텔 통합 시공, 2,700명 규모",con:"럭셔리 포지션 — 예산형 프로젝트엔 부적합",web:"bondinteriors.com"},
+   {n:"WonderWall Interiors",added:"2026-07-07",loc:"Latifa Tower, Sheikh Zayed Rd, Dubai (2017~)",tier:"mid",grade:["high-end villa","apartment","hotel-commercial"],also:["fitout-comm"],tags:["턴키","철거","조이너리","MEP"],
+    brands:"셸-투-피니시 엔드투엔드 D&B — 빌라·아파트·오피스·리테일, 커스텀 조이너리·MEP 조정",pro:"단일팀 통합 관리(디자인·시공·품질), 빌라/주거 대응 유연. ☎ +971 55 159 3942",con:"신생(2017)·소규모 — 대형 기관 트랙레코드 얕음",web:"wonderwall.ae"},
+   {n:"Revive Hub Renovations",added:"2026-07-07",loc:"Dubai (DED 라이선스 확인)",tier:"budget",grade:["apartment","high-end villa"],tags:["턴키","철거"],
+    brands:"주거 중심 리노베이션·오피스 핏아웃 단일벤더 — 빌라·주방·욕실·스마트홈, 3D 프리뷰",pro:"투명 견적·3D 선(先)프리뷰, 700+ 프로젝트, 예산형 주거 리노에 적합",con:"소규모 — 대형 턴키·하이엔드 호텔 역량은 아님",web:"revivehub.ae"},
+   {n:"BOKLY Dubai Renovation",src:"user",added:"2026-07-07",loc:"M-28, Arabilla Bldg, Al Waheda, Dubai",tier:"mid",grade:["apartment","high-end villa","hotel-commercial"],also:["fitout-comm"],tags:["턴키","철거"],
+    brands:"인테리어 디자인·리노베이션 (주거+오피스) — 소규모 크래프트맨 팀",pro:"★사용자 이메일 문의처. 두바이 Al Waheda 소재, 주거·오피스 리노베이션",con:"🚩 소규모 — 자체 웹사이트 없음(Facebook 페이지만), 레퍼런스·규모 확인 권장",web:"facebook.com/people/BOKLY-DUBAI-Renovation/61560387713788/"},
+  ]},
+
+ {id:"qs", title:"Cost / QS", ko:"적산 · QS · 코스트 컨설팅", group:"qs",
+  note:"적산·QS(quantity surveying)·코스트 컨설팅. 물량 산출(BOQ)·코스트 플랜·계약 관리 — 설계·시공 견적을 독립적으로 검증할 때 씁니다. 티어별로: 대형(글로벌 브랜드 — 랜드마크·대형용, 인테리어 단독엔 오버스펙일 수 있음) / 중견·전문(UAE 로컬 실무 적산·BOQ·BIM 물량 — 인테리어 실무에 적합). 서비스 범위(적산만 vs 코스트 매니지먼트 전반)와 수임 방식을 확인하세요.",
+  items:[
+   {n:"Turner & Townsend",added:"2026-07-07",loc:"Boulevard Plaza 2, Downtown Dubai (+ Abu Dhabi)",tier:"luxury",grade:["hotel-commercial","high-end villa","mid-tier"],
+    brands:"Cost & commercial management·QS·전주기 코스트 컨트롤 — 글로벌 최대급",pro:"글로벌 데이터·벤치마킹 최상위, 대형·복합 실적. ☎ +971 4 430 9101",con:"소규모 인테리어 단독엔 오버스펙·비용 부담",web:"turnerandtownsend.com"},
+   {n:"Rider Levett Bucknall (RLB)",added:"2026-07-07",loc:"Marina Plaza, Dubai Marina (ME 본부 Barsha Heights)",tier:"premium",grade:["hotel-commercial","high-end villa","mid-tier"],
+    brands:"Cost Management·QS 전문 (PMC·FM 겸업) — 전통 QS 강자",pro:"QS 뿌리 깊은 글로벌 펌, 코스트 데이터·리포트 신뢰도↑. ☎ +971 4 339 7444",con:"프리미엄 요율",web:"rlb.com"},
+   {n:"Currie & Brown",added:"2026-07-07",loc:"Dubai Hills Business Park (+ Abu Dhabi)",tier:"premium",grade:["hotel-commercial","high-end villa","mid-tier"],flag:true,
+    brands:"Cost management·QS·building surveying·PM — 순수 cost/QS 컨설턴시",pro:"중동 오래된 QS 실적, 현지 리더십 확립",con:"🚩 주소가 소스마다 상이 — 방문/발주 전 최신 주소 확인",web:"curriebrown.com"},
+   {n:"Faithful+Gould (AtkinsRéalis)",added:"2026-07-07",loc:"Al Rostamani Bldg, Bur Dubai",tier:"premium",grade:["hotel-commercial","high-end villa","mid-tier"],
+    brands:"Cost·commercial management·project controls — AtkinsRéalis 산하 통합 PMC",pro:"엔지니어링(Atkins)+cost(F+G) 통합 원스톱. ☎ +971 4 405 9100",con:"브랜드 통합 과도기(F+G→AtkinsRéalis) 명칭·연락처 혼선 가능",web:"fgould.com"},
+   {n:"AECOM (Cost Management)",added:"2026-07-07",loc:"Dubai",tier:"premium",grade:["hotel-commercial","mid-tier"],flag:true,
+    brands:"Cost management·QS(pre&post-contract)·commercial — 세계 최대급 cost 부문",pro:"방대한 코스트 데이터, 인프라~빌딩 전 분야",con:"🚩 인테리어보다 대형 인프라·건축 중심, Dubai QS 오피스 주소·전화 미공개",web:"aecom.com"},
+   {n:"Gleeds",added:"2026-07-07",loc:"Gold & Diamond Park, SZR / DIFC, Dubai",tier:"premium",grade:["apartment","mid-tier","high-end villa","hotel-commercial"],flag:true,
+    brands:"Cost management·QS·building surveying·strategic advisory — 독립계 글로벌",pro:"독립성(비 대형그룹) + 20년+ UAE 실적, 호스피탈리티/레지덴셜 커버",con:"🚩 오피스 주소 소스간 불일치 — 방문 전 확인",web:"gleeds.com"},
+   {n:"Arcadis (구 EC Harris)",added:"2026-07-07",loc:"Dubai (+ Abu Dhabi)",tier:"premium",grade:["hotel-commercial","high-end villa","mid-tier"],
+    brands:"Cost/commercial management·QS (EC Harris cost 통합) — 코스트+지속가능성",pro:"EC Harris QS 유산 + 글로벌망, 지속가능성 연계. ☎ +971 4 338 0075",con:"cost 부문이 대형 조직 내 일부 — 인테리어 전담 포지션은 약함",web:"arcadis.com"},
+   {n:"Cumming Group",added:"2026-07-07",loc:"iRise Bldg, TECOM (Barsha Heights), Dubai (+ AD)",tier:"premium",grade:["hotel-commercial","high-end villa","mid-tier"],flag:true,
+    brands:"Program·project·construction·cost management — 미국계 PM+cost 컨설턴시",pro:"미국계 PM/cost 강자, 현지 cost 리더십 확립",con:"🚩 스트리트 주소·대표전화 공개 부족(info@cumming-group.com)",web:"cumming-group.com"},
+   {n:"WT Partnership (WT ME)",added:"2026-07-07",loc:"Blue Sky Tower, Capital Gate, Abu Dhabi",tier:"premium",grade:["hotel-commercial","high-end villa"],flag:true,
+    brands:"Cost management·QS·MEP cost — 75년+ 순수 QS (Emirates Palace 리퍼비시 QS)",pro:"순수 QS 전문성, MEP·호텔 리퍼비시 등 인테리어 인접 실적. ☎ +971 2 666 3490",con:"🚩 공식상 Dubai 단독 오피스 없음(AD 거점) — Dubai 원격 대응 확인",web:"wtpartnership.ae"},
+   {n:"Linesight",added:"2026-07-07",loc:"Mazaya Business Ave, JLT, Dubai",tier:"premium",grade:["hotel-commercial","mid-tier"],
+    brands:"Cost management·QS — cost predictability·value 전문 (데이터센터·상업 강점)",pro:"아일랜드계 글로벌 QS, 하이테크·상업 강점. ☎ +971 4 432 3831",con:"인테리어보다 하이테크/상업 대형 중심",web:"linesight.com"},
+   {n:"Mace (Mace Consult)",added:"2026-07-07",loc:"Business Bay / SZR, Dubai",tier:"luxury",grade:["hotel-commercial","high-end villa"],flag:true,
+    brands:"Cost/commercial consultancy·QS (Mace Consult) — PM+cost 통합 (Expo 2020·One Za'abeel)",pro:"1998~ 초대형 랜드마크 실적, 프리미엄 브랜드",con:"🚩 2026 Mace Consult/Construct 분사 과도기 — 서비스·연락처 재확인, 소규모엔 오버스펙",web:"macegroup.com"},
+   {n:"AESG",added:"2026-07-07",loc:"Ibn Battuta Gate Offices, Jebel Ali, Dubai",tier:"premium",grade:["hotel-commercial","high-end villa","mid-tier"],
+    brands:"Cost management(QS·budgeting·project monitoring) + 스페셜리스트 엔지니어링·지속가능성",pro:"두바이 태생(2011) 현지 밀착 + 엔지니어링/지속가능성 통합 원스톱. ☎ +971 4 432 6242",con:"순수 QS 전문 펌 대비 cost는 다분야 중 일부",web:"aesg.com"},
+   {n:"Stonehaven",src:"user",added:"2026-07-07",loc:"Dubai",tier:"mid",grade:["mid-tier","high-end villa","hotel-commercial"],
+    brands:"적산·QS·코스트 컨설팅 (UAE 로컬 중견) — 구분: 중견",pro:"★사용자 제공(실무 적산). ☎ +971 4 570 2994 · hello@stonehaven.ae",con:"글로벌 대형 대비 규모 작음 — 인테리어 실무 적산엔 적합. 서비스 범위 확인",web:"stonehaven.ae"},
+   {n:"Land Sterling",src:"user",added:"2026-07-07",loc:"Dubai Silicon Oasis",tier:"mid",grade:["mid-tier","high-end villa","hotel-commercial"],flag:true,
+    brands:"부동산 종합 컨설팅 — 'Project Management & Cost Consultancy'부서에서 QS·적산·BOQ (RICS/CIOB 공인)",pro:"★사용자 제공. BOQ 서비스 페이지 확인, RICS chartered surveyor",con:"🚩 QS 외 부동산 자문 겸업. 표의 ☎ +971 4 501 3915는 부서직통 추정 — 대표번호 +971 4 380 8707",web:"landsterling.com"},
+   {n:"TC Consultancy ME",src:"user",added:"2026-07-07",loc:"Dubai",tier:"mid",grade:["mid-tier","high-end villa","hotel-commercial"],
+    brands:"코스트·QS 컨설팅 (중견)",pro:"★사용자 제공(실무 적산)",con:"연락처·서비스 상세는 사이트 문의폼으로 확인",web:"tccons.ae"},
+   {n:"Araka Engineering",src:"user",added:"2026-07-07",loc:"Dubai",tier:"mid",grade:["mid-tier","high-end villa","hotel-commercial"],
+    brands:"엔지니어링 + BOQ(물량산출) 서비스 — 적산 특화 (전문)",pro:"★사용자 제공. BOQ 적산 특화, ☎ +971 4 393 6330 · info@araka.ae",con:"엔지니어링 겸업 — 적산 전담 범위 확인",web:"araka.ae/boq-services"},
+   {n:"BIMelite",src:"user",added:"2026-07-07",loc:"Ibn Battuta Gate, Jebel Ali, Dubai",tier:"mid",grade:["mid-tier","high-end villa","hotel-commercial"],flag:true,
+    brands:"BIM(빌딩정보모델링) 전문사 — 5D 물량산출은 부수 서비스 (3D 모델링·클래시·레이저스캔·Revit 교육이 주력)",pro:"★사용자 제공. BIM 기반 물량 산출 가능",con:"🚩 순수 적산·코스트 컨설팅사 아님(BIM 전문). 표 ☎ +971 54 445 0079 ↔ 사이트 +971 4 272 7592 불일치·이메일 gmail — 확인 필요",web:"bimelite.ae"},
+   {n:"IR Interior",src:"user",added:"2026-07-07",loc:"Port Saeed, Deira, Dubai",tier:"mid",grade:["mid-tier","high-end villa","hotel-commercial"],flag:true,also:["fitout-comm"],
+    brands:"인테리어·피트아웃 + Dubai Municipality/민방위 인허가 대행 전문 (BOQ는 부수 제공)",pro:"★사용자 제공. 인허가(시청·Civil Defence) 대행 강점, ☎ +971 4 548 1265 · info@irinterior.com",con:"🚩 순수 QS/적산 전문사 아님 — 인테리어·인허가 업체. 적산 단독 발주엔 부적합(인허가·피트아웃 목적이면 유용)",web:"irinterior.com"},
+   {n:"D&A Consult",src:"user",added:"2026-07-07",loc:"Dubai",tier:"mid",grade:["mid-tier","high-end villa","hotel-commercial"],
+    brands:"코스트·QS 컨설팅 (현행 거래 후보)",pro:"★사용자 제공. ☎ +971 4 294 1144 · Businessdevelopement@daconsult.ae",con:"서비스 상세·레퍼런스 확인 권장",web:"daconsult.ae"},
+  ]},
 ];
 
 const TIER_LABEL={budget:"예산형",mid:"중급",premium:"프리미엄",luxury:"럭셔리"};
 const GRADE_LABEL={"apartment":"아파트","mid-tier":"중급개발","high-end villa":"고급빌라","hotel-commercial":"호텔·상업"};
+// 최상위 대분류
+const GROUP_ORDER=["materials","design","construction","qs"];
+const GROUP_LABEL={materials:"자재 · Materials",design:"설계·디자인 · Design",construction:"시공 · Construction",qs:"적산 · Cost / QS"};
+const groupOf=c=>c.group||"materials";
+const catsOf=g=>DATA.filter(c=>groupOf(c)===g);
+const SVG=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const GROUP_ICON={
+  materials:SVG('<path d="M12 2.8 L20.5 7.4 V16.6 L12 21.2 L3.5 16.6 V7.4 Z"/><path d="M3.7 7.5 L12 12 L20.3 7.5 M12 12 V21"/>'),
+  design:SVG('<path d="M5 4 V20 H19"/><path d="M5 20 L19 6"/><path d="M15 6 h4 v4"/>'),
+  construction:SVG('<path d="M3.5 19 h17"/><path d="M5.5 19 a6.5 6.5 0 0 1 13 0"/><path d="M9 11 V7 a3 3 0 0 1 6 0 v4"/>'),
+  qs:SVG('<rect x="5" y="3" width="14" height="18" rx="2"/><line x1="8.5" y1="7.5" x2="15.5" y2="7.5"/><line x1="8.5" y1="12" x2="11.5" y2="12"/><line x1="8.5" y1="16" x2="11.5" y2="16"/>')
+};
 
 // 팔로우업 상태 (클릭해 단계 표시)
 const STATUSES=[
   {k:"",label:"미정"},
-  {k:"contacted",label:"컨택함"},
-  {k:"visited",label:"방문함"},
+  {k:"contacted",label:"컨택·방문"},
   {k:"quoting",label:"견적 비교중"},
   {k:"confirmed",label:"확정"},
   {k:"excluded",label:"제외"},
@@ -1081,24 +1385,31 @@ function mapLinksHtml(it){
 const nav=document.getElementById('nav'), content=document.getElementById('content');
 
 (function(){const a=document.createElement('a');a.className='nav-home';
-  a.innerHTML='<span>홈 (맨 위)</span><span class="n">↑</span>';
-  a.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
+  a.innerHTML='<span>홈 (4개 대분류)</span><span class="n">⌂</span>';
+  a.onclick=()=>setView('hub');
   nav.appendChild(a);})();
 
-DATA.forEach((c,i)=>{
-  const a=document.createElement('a');
-  a.dataset.target=c.id;
-  a.innerHTML=`<span>${i+1}. ${c.ko.split(' (')[0]}</span><span class="n"><b id="np-${c.id}">0</b>/${c.items.filter(x=>!x.closed).length}</span>`;
-  a.onclick=()=>{document.getElementById(c.id).scrollIntoView({behavior:'smooth'});};
-  nav.appendChild(a);
+GROUP_ORDER.forEach(g=>{
+  const cats=catsOf(g); if(!cats.length) return;
+  const gl=document.createElement('div'); gl.className='nav-group';
+  gl.textContent=GROUP_LABEL[g];
+  gl.onclick=()=>setView(g);
+  nav.appendChild(gl);
+  cats.forEach((c,gi)=>{
+    const a=document.createElement('a');
+    a.dataset.target=c.id;
+    a.innerHTML=`<span>${gi+1}. ${c.ko.split(' (')[0]}</span><span class="n"><b id="np-${c.id}">0</b>/${c.items.filter(x=>!x.closed).length}</span>`;
+    a.onclick=()=>openCat(c.id);
+    nav.appendChild(a);
+  });
 });
 (function(){const a=document.createElement('a');a.dataset.target='projects';
   a.innerHTML='<span>＋ 프로젝트별 확인 자재</span><span class="n">★</span>';
-  a.onclick=()=>{document.getElementById('projects').scrollIntoView({behavior:'smooth'});};
+  a.onclick=()=>setView('projects');
   nav.appendChild(a);})();
 (function(){const a=document.createElement('a');a.dataset.target='playbook';
   a.innerHTML='<span>＋ 업체별 확인사항</span><span class="n">★</span>';
-  a.onclick=()=>{document.getElementById('playbook').scrollIntoView({behavior:'smooth'});};
+  a.onclick=()=>setView('playbook');
   nav.appendChild(a);})();
 
 function tierBadge(t){return `<span class="badge b-${t}">${TIER_LABEL[t]}</span>`;}
@@ -1117,14 +1428,16 @@ function buildCard(it, ownerId, borrowed){
   const userBadge=it.src==='user'?`<span class="badge b-user">직접 추가</span>`:'';
   const unconfBadge=it.flag&&it.src==='user'?`<span class="badge b-unconf">🚩 상호 미확인</span>`:'';
   const newBadge=it.added?`<span class="badge b-new" title="${it.added} 추가됨">NEW</span>`:'';
-  const supBadge=supplyBadge(it); card.dataset.supply=supplyInfo(it).v;
   const own=DATA.find(x=>x.id===ownerId);
+  const isMat=groupOf(own||{})==='materials';
+  const supBadge=isMat?supplyBadge(it):''; card.dataset.supply=isMat?supplyInfo(it).v:'';
+  const tagBadges=(it.tags||[]).map(t=>`<span class="badge b-tag">${t}</span>`).join(''); card.dataset.tags=(it.tags||[]).join('|');
   const borrowBadge=borrowed?`<span class="badge b-borrow">↗ ${own?own.ko.split(' (')[0]:ownerId}</span>`:'';
   card.innerHTML=`
     <h3>${(it.flag&&it.src!=='user')?'🚩 ':''}${it.n}</h3>
     ${mapLinksHtml(it)}
-    <div class="badges">${newBadge}${borrowBadge}${tierBadge(it.tier)}${supBadge}${gradeBadges(it.grade)}${regBadges(it.loc)}${userBadge}${unconfBadge}</div>
-    <div class="brands"><b>취급 브랜드 · 특화</b>${it.brands}</div>
+    <div class="badges">${newBadge}${borrowBadge}${tierBadge(it.tier)}${supBadge}${tagBadges}${gradeBadges(it.grade)}${regBadges(it.loc)}${userBadge}${unconfBadge}</div>
+    <div class="brands"><b>${isMat?'취급 브랜드 · 특화':'전문 · 서비스'}</b>${it.brands}</div>
     <div class="row"><span class="k pro">장점</span><span>${it.pro}</span></div>
     <div class="row"><span class="k con">단점</span><span>${it.con}</span></div>
     <div class="followup">
@@ -1150,29 +1463,113 @@ function buildCard(it, ownerId, borrowed){
 }
 function render(){
   content.innerHTML='';
-  DATA.forEach((c,i)=>{
-    const block=document.createElement('section');
-    block.className='cat-block'; block.id=c.id;
-    const refsHtml=(c.refs&&c.refs.length)?`<details class="cat-refs"><summary class="rl">참고 링크 ${c.refs.length} — UAE 외 지역·브랜드 레퍼런스 (직접 조달 불가, 스타일·스펙 참고용)</summary><div class="rl-body">${
-      c.refs.map(r=>`<div>· <a href="${r.u}" target="_blank" rel="noopener">${r.l}</a>${r.d?` — ${r.d}`:''}</div>`).join('')}</div></details>`:'';
-    block.innerHTML=`<div class="cat-head"><h2>${i+1}. ${c.title}</h2><span class="ko">${c.ko}</span>
-      <span class="cnt" id="cp-${c.id}">${c.items.length}개 업체</span></div>
-      <div class="cat-note">${c.note}</div>${refsHtml}`;
-    const grid=document.createElement('div'); grid.className='grid';
-    c.items.forEach(it=>{ if(it.closed)return; grid.appendChild(buildCard(it,c.id,false)); });
-    // 다른 카테고리에서 also로 겹쳐 참조된 업체(예: 주방업체가 붙박이장·가구에도)
-    DATA.forEach(o=>{ if(o.id===c.id)return; o.items.forEach(it=>{ if(it.closed)return; if(it.also&&it.also.indexOf(c.id)>=0) grid.appendChild(buildCard(it,o.id,true)); }); });
-    [...grid.children].forEach((cd,idx)=>cd.dataset.ord=idx); // 원래 순서 기억 — 표시 해제 시 원위치 복귀용
-    block.appendChild(grid);
-    content.appendChild(block);
+  let alt=0;
+  GROUP_ORDER.forEach(g=>{
+    const cats=catsOf(g); if(!cats.length) return;
+    const gh=document.createElement('div'); gh.className='group-head'; gh.id='grp-'+g;
+    gh.innerHTML=`<span class="group-title">${GROUP_LABEL[g]}</span>`;
+    content.appendChild(gh);
+    cats.forEach((c,gi)=>{
+      const block=document.createElement('section');
+      block.className='cat-block'+(alt++%2?' alt':''); block.id=c.id; block.dataset.group=g;
+      const refsHtml=(c.refs&&c.refs.length)?`<details class="cat-refs"><summary class="rl">참고 링크 ${c.refs.length} — UAE 외 지역·브랜드 레퍼런스 (직접 조달 불가, 스타일·스펙 참고용)</summary><div class="rl-body">${
+        c.refs.map(r=>`<div>· <a href="${r.u}" target="_blank" rel="noopener">${r.l}</a>${r.d?` — ${r.d}`:''}</div>`).join('')}</div></details>`:'';
+      block.innerHTML=`<div class="cat-head"><h2>${gi+1}. ${c.title}</h2><span class="ko">${c.ko}</span>
+        <span class="cnt" id="cp-${c.id}">${c.items.length}개 업체</span></div>
+        <div class="cat-note">${c.note}</div>${refsHtml}`;
+      const grid=document.createElement('div'); grid.className='grid';
+      c.items.forEach(it=>{ if(it.closed)return; grid.appendChild(buildCard(it,c.id,false)); });
+      // 다른 카테고리에서 also로 겹쳐 참조된 업체(예: 주방업체가 붙박이장·가구에도)
+      DATA.forEach(o=>{ if(o.id===c.id)return; o.items.forEach(it=>{ if(it.closed)return; if(it.also&&it.also.indexOf(c.id)>=0) grid.appendChild(buildCard(it,o.id,true)); }); });
+      [...grid.children].forEach((cd,idx)=>cd.dataset.ord=idx); // 원래 순서 기억 — 표시 해제 시 원위치 복귀용
+      block.appendChild(grid);
+      content.appendChild(block);
+    });
   });
 }
 render();
 
-const search=document.getElementById('search'), fGrade=document.getElementById('fGrade'), fTier=document.getElementById('fTier'), fStatus=document.getElementById('fStatus'), fRegion=document.getElementById('fRegion'), fSupply=document.getElementById('fSupply');
+// 메인 상단 대분류 허브 카드 4개
+function buildHub(){
+  const hub=document.getElementById('hub'); if(!hub) return; hub.innerHTML='';
+  GROUP_ORDER.forEach(g=>{
+    const cats=catsOf(g); if(!cats.length) return;
+    let comp=0; cats.forEach(c=>comp+=c.items.filter(x=>!x.closed).length);
+    const [ko,en]=GROUP_LABEL[g].split(' · ');
+    const card=document.createElement('div'); card.className='ghub-card';
+    card.innerHTML=`<div class="gh-ic">${GROUP_ICON[g]||''}</div><div class="gh-t">${ko}</div><div class="gh-en">${en||''}</div><div class="gh-n">${cats.length} 카테고리 · ${comp}곳</div>`;
+    card.onclick=()=>setView(g);
+    hub.appendChild(card);
+  });
+}
+buildHub();
+
+// ===== 드릴다운: 4카드 허브 → 카테고리 카드 → 업체 =====
+let currentView='hub', currentCat=null;
+function buildGroupTabs(){
+  const tabs=document.getElementById('groupTabs'); if(!tabs) return; tabs.innerHTML='';
+  const home=document.createElement('button'); home.type='button'; home.className='gt-btn gt-home';
+  home.innerHTML=`${SVG('<path d="M4 11 L12 4 L20 11"/><path d="M6 9.5 V20 H18 V9.5"/>')} 홈`;
+  home.onclick=()=>setView('hub'); tabs.appendChild(home);
+  GROUP_ORDER.forEach(g=>{ if(!catsOf(g).length) return;
+    const b=document.createElement('button'); b.type='button'; b.className='gt-btn'; b.dataset.view=g;
+    b.textContent=GROUP_LABEL[g].split(' · ')[0]; b.onclick=()=>setView(g); tabs.appendChild(b);
+  });
+  const sep=document.createElement('span'); sep.className='gt-sep'; tabs.appendChild(sep);
+  [['projects','프로젝트 자재'],['playbook','확인사항']].forEach(([v,lab])=>{
+    const b=document.createElement('button'); b.type='button'; b.className='gt-btn'; b.dataset.view=v;
+    b.textContent=lab; b.onclick=()=>setView(v); tabs.appendChild(b);
+  });
+}
+function buildCatHub(g){
+  const ch=document.getElementById('catHub'); if(!ch) return; ch.innerHTML='';
+  catsOf(g).forEach(c=>{
+    const comp=c.items.filter(x=>!x.closed).length;
+    const card=document.createElement('div'); card.className='ghub-card';
+    card.innerHTML=`<div class="gh-t">${c.ko.split(' (')[0]}</div><div class="gh-en">${c.title}</div><div class="gh-n">${comp}곳</div>`;
+    card.onclick=()=>openCat(c.id);
+    ch.appendChild(card);
+  });
+}
+function applyView(){
+  const hub=document.getElementById('hub'), layout=document.querySelector('.layout'), tabs=document.getElementById('groupTabs'),
+        catHub=document.getElementById('catHub'), catBack=document.getElementById('catBack'),
+        controls=document.querySelector('.controls'), desk=document.getElementById('deskFilters');
+  if(currentView==='hub'){ hub.style.display=''; layout.style.display='none'; tabs.style.display='none'; window.scrollTo(0,0); return; }
+  hub.style.display='none'; layout.style.display=''; tabs.style.display='flex';
+  const isGroup=GROUP_ORDER.indexOf(currentView)>=0;
+  const groupView=isGroup && !currentCat;      // 카테고리 카드 화면
+  const catView=isGroup && !!currentCat;        // 특정 카테고리 업체 화면
+  // 카테고리 카드 그리드
+  catHub.classList.toggle('view-hidden', !groupView);
+  if(groupView) buildCatHub(currentView);
+  // 뒤로가기 바
+  catBack.style.display=catView?'flex':'none';
+  if(catView) catBack.textContent=(GROUP_LABEL[currentView].split(' · ')[0])+' 카테고리 전체';
+  // 검색/필터 바는 업체 화면에서만
+  if(controls) controls.style.display=catView?'flex':'none';
+  if(desk) desk.style.display=catView?'':'none';
+  // 콘텐츠 섹션: 그룹헤더는 드릴다운에선 숨김, cat-block은 선택된 것만
+  document.querySelectorAll('#content .group-head').forEach(gh=>gh.classList.add('view-hidden'));
+  document.querySelectorAll('#content .cat-block').forEach(b=>b.classList.toggle('view-hidden', !(catView && b.id===currentCat)));
+  const pj=document.getElementById('projects'), pb=document.getElementById('playbook');
+  if(pj) pj.classList.toggle('view-hidden', currentView!=='projects');
+  if(pb) pb.classList.toggle('view-hidden', currentView!=='playbook');
+  tabs.querySelectorAll('[data-view]').forEach(t=>t.classList.toggle('active', t.dataset.view===currentView));
+  window.scrollTo(0,0);
+}
+function setView(v){ currentView=v; currentCat=null;
+  if(GROUP_ORDER.indexOf(v)>=0){ const cs=catsOf(v); if(cs.length===1) currentCat=cs[0].id; }  // 단일 카테고리 그룹은 바로 업체로
+  applyView();
+}
+function openCat(catId){ const c=DATA.find(x=>x.id===catId); if(c){ currentView=groupOf(c); currentCat=catId; applyView(); } }
+(function(){var cb=document.getElementById('catBack'); if(cb)cb.onclick=()=>{ currentCat=null; applyView(); };})();
+buildGroupTabs(); applyView();
+
+const search=document.getElementById('search'), fGrade=document.getElementById('fGrade'), fTier=document.getElementById('fTier'), fStatus=document.getElementById('fStatus'), fRegion=document.getElementById('fRegion'), fSupply=document.getElementById('fSupply'), fTag=document.getElementById('fTag');
 let newOnly=false;
 function applyFilter(){
-  const q=search.value.trim().toLowerCase(), g=fGrade.value, t=fTier.value, st=fStatus.value, rg=fRegion.value, su=fSupply.value;
+  const q=search.value.trim().toLowerCase(), g=fGrade.value, t=fTier.value, st=fStatus.value, rg=fRegion.value, su=fSupply.value, tg=fTag.value;
   DATA.forEach(c=>{
     const block=document.getElementById(c.id);
     let visible=0;
@@ -1183,6 +1580,7 @@ function applyFilter(){
       const cs=card.dataset.status||'';
       const okS=!st||(st==='none'?cs==='':cs===st);
       const okSu=!su||(card.dataset.supply||'')===su;
+      const okTg=!tg||(card.dataset.tags||'').split('|').includes(tg);
       const okN=!newOnly||(card.dataset.new==='1'&&!card.classList.contains('reviewed'));
       const regs=(card.dataset.region||'').split('|').filter(Boolean);
       let okR=true;
@@ -1190,7 +1588,7 @@ function applyFilter(){
         if(rg==='other') okR=regs.some(x=>x==='ajman'||x==='rak')&&!['dubai','ad','sharjah'].some(x=>regs.includes(x));
         else okR=regs.includes(rg)||regs.includes('uae');
       }
-      const show=okQ&&okG&&okT&&okS&&okR&&okSu&&okN;
+      const show=okQ&&okG&&okT&&okS&&okR&&okSu&&okTg&&okN;
       card.classList.toggle('hidden',!show);
       if(show)visible++;
     });
@@ -1198,7 +1596,7 @@ function applyFilter(){
   });
 }
 search.addEventListener('input',applyFilter);
-[fGrade,fTier,fStatus,fRegion,fSupply].forEach(el=>el.addEventListener('change',applyFilter));
+[fGrade,fTier,fStatus,fRegion,fSupply,fTag].forEach(el=>el.addEventListener('change',applyFilter));
 const btnNew=document.getElementById('btnNew');
 btnNew.onclick=()=>{newOnly=!newOnly; btnNew.classList.toggle('on',newOnly); applyFilter();};
 // 안 본 신규 카운트 — 같은 업체가 여러 카테고리에 겹쳐도 1개로만 집계
@@ -1227,7 +1625,7 @@ function loadState(){
   let o={};
   try{o=JSON.parse(localStorage.getItem(LS_KEY))||{};}catch(e){o={};}
   // 구버전(방문 체크박스) → 상태 워크플로 마이그레이션
-  Object.keys(o).forEach(k=>{const s=o[k]; if(s&&s.visited&&!s.status)s.status='visited';});
+  Object.keys(o).forEach(k=>{const s=o[k]; if(s&&s.visited&&!s.status)s.status='contacted'; if(s&&s.status==='visited')s.status='contacted';});
   return o;
 }
 function saveState(){try{localStorage.setItem(LS_KEY,JSON.stringify(STATE));}catch(e){}}
@@ -1274,8 +1672,7 @@ function updateProgress(){
     const cp=document.getElementById('cp-'+c.id);
     if(cp){
       const chips=[];
-      if(cnt.contacted)chips.push(`<span class="chip c-contacted">컨택 ${cnt.contacted}</span>`);
-      if(cnt.visited)chips.push(`<span class="chip c-visited">방문 ${cnt.visited}</span>`);
+      if(cnt.contacted)chips.push(`<span class="chip c-contacted">컨택·방문 ${cnt.contacted}</span>`);
       if(cnt.quoting)chips.push(`<span class="chip c-quoting">견적 ${cnt.quoting}</span>`);
       if(cnt.confirmed)chips.push(`<span class="chip c-confirmed">확정 ${cnt.confirmed}</span>`);
       if(cnt.excluded)chips.push(`<span class="chip c-excluded">제외 ${cnt.excluded}</span>`);
@@ -1473,10 +1870,123 @@ const obs=new IntersectionObserver(es=>{
 },{rootMargin:'-10% 0px -80% 0px'});
 DATA.forEach(c=>obs.observe(document.getElementById(c.id)));
 
-// 플로팅 홈(맨 위로) 버튼 — 스크롤 내리면 나타남
+// 플로팅 홈(맨 위로) 버튼 — 항상 표시
 const gotop=document.getElementById('gotop');
-gotop.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
-window.addEventListener('scroll',()=>gotop.classList.toggle('show',window.scrollY>400),{passive:true});
+gotop.onclick=()=>setView('hub');
+gotop.classList.add('show');
+(function(){var gh=document.getElementById('gnavHome'); if(gh)gh.onclick=()=>setView('hub');})();
+
+/* ===== 우측 사이드바 배치(데스크톱) / 본문 복귀(모바일) — 노드 이동으로 기존 핸들러 보존 ===== */
+(function(){
+  const rbProg=document.getElementById('rbProg'), rbLeg=document.getElementById('rbLegend'),
+        c2=document.querySelector('.controls2'), lg=document.querySelector('.legend'),
+        mainEl=document.querySelector('main'), contentEl=document.getElementById('content');
+  if(!rbProg||!c2||!mainEl||!contentEl) return;
+  const mq=window.matchMedia('(min-width:821px)');
+  function place(){
+    if(mq.matches){ rbProg.appendChild(c2); if(lg)rbLeg.appendChild(lg); }
+    else { mainEl.insertBefore(c2,contentEl); if(lg)mainEl.insertBefore(lg,contentEl); }
+  }
+  place();
+  if(mq.addEventListener) mq.addEventListener('change',place); else window.addEventListener('resize',place);
+})();
+
+/* ===== 모바일 UI: 바텀시트 필터 + 하단 탭바 (기존 select/applyFilter 재사용) ===== */
+(function(){
+  const sheet=document.getElementById('mSheet'), ov=document.getElementById('mSheetOv'),
+        body=document.getElementById('mSheetBody'), fbtn=document.getElementById('mFilterBtn'),
+        fbadge=document.getElementById('mFbadge'), chipsWrap=document.getElementById('mChips'),
+        viewBtn=document.getElementById('mViewBtn'), resetBtn=document.getElementById('mResetBtn'),
+        tabbar=document.getElementById('mtabbar');
+  if(!sheet||!fbtn) return;
+  const GROUPS=[
+    {sel:fGrade, title:'프로젝트 등급', opts:[['apartment','아파트'],['mid-tier','중급 개발'],['high-end villa','고급 빌라'],['hotel-commercial','호텔·상업']]},
+    {sel:fTier,  title:'가격대',      opts:[['budget','예산형'],['mid','중급'],['premium','프리미엄'],['luxury','럭셔리']]},
+    {sel:fStatus,title:'진행 상태',   opts:[['none','미정'],['contacted','컨택·방문'],['quoting','견적 비교중'],['confirmed','확정'],['excluded','제외']]},
+    {sel:fRegion,title:'지역',        opts:[['dubai','두바이'],['ad','아부다비'],['sharjah','샤르자'],['other','기타(아지만·RAK)']]},
+    {sel:fSupply,title:'공급구조',    opts:[['maker','직거래·제조'],['trader','유통·재가공'],['check','확인 필요']]},
+    {sel:fTag,   title:'공종 (시공)',  opts:[['턴키','턴키'],['철거','철거'],['Civil','Civil'],['조이너리','조이너리'],['밀워크','밀워크'],['마블가공','마블가공'],['MEP','MEP'],['조경','조경'],['가구','가구']]},
+  ];
+  GROUPS.forEach((g,gi)=>{
+    const h=document.createElement('h4'); h.textContent=g.title; body.appendChild(h);
+    const wrap=document.createElement('div'); wrap.className='schips';
+    g.opts.forEach(([v,lab])=>{
+      const b=document.createElement('button'); b.type='button'; b.className='schip';
+      b.textContent=lab; b.dataset.g=gi; b.dataset.v=v;
+      b.onclick=()=>{ g.sel.value=(g.sel.value===v)?'':v; applyFilter(); refresh(); };
+      wrap.appendChild(b);
+    });
+    body.appendChild(wrap);
+  });
+  // 기타 — 안 본 신규만 (btnNew와 동일 상태 공유)
+  const he=document.createElement('h4'); he.textContent='기타'; body.appendChild(he);
+  const ew=document.createElement('div'); ew.className='schips';
+  const newChip=document.createElement('button'); newChip.type='button'; newChip.className='schip newchip'; newChip.textContent='안 본 신규만';
+  newChip.onclick=()=>{ btnNew.click(); }; // btnNew.click → newOnly 토글 + applyFilter; 아래 리스너가 refresh
+  ew.appendChild(newChip); body.appendChild(ew);
+
+  // 데스크톱 필터 칩 패널 (스펙 §4·§5) — 시트와 동일 엔진 공유
+  const desk=document.getElementById('deskFilters');
+  if(desk){
+    GROUPS.forEach((g,gi)=>{
+      const row=document.createElement('div'); row.className='df-row';
+      const lab=document.createElement('div'); lab.className='df-label'; lab.textContent=g.title; row.appendChild(lab);
+      const wrap=document.createElement('div'); wrap.className='df-chips';
+      g.opts.forEach(([v,labx])=>{
+        const b=document.createElement('button'); b.type='button'; b.className='schip';
+        b.textContent=labx; b.dataset.g=gi; b.dataset.v=v;
+        b.onclick=()=>{ g.sel.value=(g.sel.value===v)?'':v; applyFilter(); refresh(); };
+        wrap.appendChild(b);
+      });
+      row.appendChild(wrap); desk.appendChild(row);
+    });
+    const rowE=document.createElement('div'); rowE.className='df-row';
+    const labE=document.createElement('div'); labE.className='df-label'; labE.textContent='기타'; rowE.appendChild(labE);
+    const wrapE=document.createElement('div'); wrapE.className='df-chips';
+    const ncD=document.createElement('button'); ncD.type='button'; ncD.className='schip newchip'; ncD.textContent='안 본 신규만';
+    ncD.onclick=()=>{ btnNew.click(); }; wrapE.appendChild(ncD); rowE.appendChild(wrapE); desk.appendChild(rowE);
+  }
+
+  function activeCount(){ let n=GROUPS.filter(g=>g.sel.value).length; if(newOnly)n++; return n; }
+  function visibleCount(){ const s=new Set(); document.querySelectorAll('#content .card:not(.hidden)').forEach(c=>{ if(c.offsetParent!==null) s.add(c.dataset.key); }); return s.size; }
+  function refresh(){
+    document.querySelectorAll('.schip[data-g]').forEach(b=>{ const g=GROUPS[+b.dataset.g]; b.classList.toggle('sel',g.sel.value===b.dataset.v); });
+    document.querySelectorAll('.newchip').forEach(b=>b.classList.toggle('sel',newOnly));
+    const n=activeCount();
+    fbadge.textContent=n; fbadge.style.display=n?'inline-flex':'none'; fbtn.classList.toggle('act',n>0);
+    chipsWrap.innerHTML='';
+    GROUPS.forEach(g=>{ if(!g.sel.value)return; const o=g.opts.find(x=>x[0]===g.sel.value); if(!o)return;
+      const c=document.createElement('span'); c.className='mc';
+      c.innerHTML=`<b>${g.title}</b> ${o[1]} <span class="x" role="button" aria-label="해제">✕</span>`;
+      c.querySelector('.x').onclick=()=>{ g.sel.value=''; applyFilter(); refresh(); };
+      chipsWrap.appendChild(c);
+    });
+    if(newOnly){ const c=document.createElement('span'); c.className='mc';
+      c.innerHTML=`안 본 신규 <span class="x" role="button" aria-label="해제">✕</span>`;
+      c.querySelector('.x').onclick=()=>{ btnNew.click(); };
+      chipsWrap.appendChild(c);
+    }
+    viewBtn.textContent=`${visibleCount()}곳 보기`;
+  }
+  function openSheet(){ ov.classList.add('open'); sheet.classList.add('open'); refresh(); }
+  function closeSheet(){ ov.classList.remove('open'); sheet.classList.remove('open'); }
+  fbtn.onclick=openSheet; ov.onclick=closeSheet; viewBtn.onclick=closeSheet;
+  resetBtn.onclick=()=>{ GROUPS.forEach(g=>g.sel.value=''); if(newOnly)btnNew.click(); search.value=''; applyFilter(); refresh(); };
+  search.addEventListener('input',refresh);
+  btnNew.addEventListener('click',refresh); // 데스크톱/시트 어디서 눌러도 동기화
+  // 하단 탭바
+  function setTab(t){ tabbar.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.tab===t)); }
+  tabbar.querySelectorAll('button').forEach(b=>{
+    b.onclick=()=>{ const t=b.dataset.tab; closeSheet();
+      if(t==='home') setView('hub');
+      else if(t==='dir') setView('materials');
+      else if(t==='mat') setView('projects');
+      else if(t==='prog'){ if(currentView==='hub')setView('materials'); var c2=document.querySelector('.controls2'); if(c2)c2.scrollIntoView({block:'center'}); }
+      setTab(t);
+    };
+  });
+  refresh();
+})();
 </script>
 </body>
 </html>
