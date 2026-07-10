@@ -259,7 +259,21 @@
   .hidden{display:none!important}
   /* ===== 데스크톱 필터 칩 패널 (스펙 §4·§5) — select는 상태 보관용으로 숨김 ===== */
   .controls select{display:none}
+  /* 데스크톱 필터 버튼 — 평소 접힘, 클릭 시 패널 토글 */
+  .mfilter{display:inline-flex;align-items:center;gap:7px;flex:none;height:40px;font-family:inherit;font-size:14px;font-weight:600;
+    padding:0 16px;border-radius:9999px;background:var(--canvas);border:1px solid var(--hairline);color:var(--ink);cursor:pointer}
+  .mfilter:hover{border-color:var(--ink-48)}
+  .mfilter.act{background:var(--blue);border-color:var(--blue);color:#fff}
+  .mfilter .fbadge{min-width:18px;height:18px;padding:0 5px;border-radius:9999px;background:var(--blue);color:#fff;font-size:11px;font-weight:700;align-items:center;justify-content:center}
+  .mfilter.act .fbadge{background:#fff;color:var(--blue)}
   .desk-filters{padding:12px max(24px,2vw) 2px}
+  .desk-filters.collapsed{display:none}
+  /* 홈(허브) 전역 검색 바 */
+  .hub-search{max-width:940px;margin:6px auto 2px;padding:0 max(5vw,24px)}
+  .hub-search input{width:100%;box-sizing:border-box;height:50px;background:var(--canvas);border:1px solid var(--hairline);
+    border-radius:13px;padding:0 18px;font-family:inherit;font-size:15px;color:var(--ink)}
+  .hub-search input::placeholder{color:var(--ink-48)}
+  .hub-search input:focus{outline:none;border:2px solid var(--blue-focus);padding:0 17px}
   .df-row{display:flex;align-items:flex-start;gap:14px;margin-bottom:9px}
   .df-row .df-label{flex:0 0 116px;font-size:11.5px;font-weight:600;color:var(--ink-48);
     text-transform:uppercase;letter-spacing:.02em;padding-top:8px}
@@ -280,7 +294,7 @@
     .rightbar .legend{flex-direction:column;align-items:flex-start;gap:8px;padding:0;font-size:12px}
   }
   /* ===== 모바일 전용 컴포넌트 (스펙 §5) — 데스크톱에선 숨김 ===== */
-  .mfilter,.mchips,#mtabbar{display:none}
+  .mchips,#mtabbar{display:none}
   /* 바텀시트 — 항상 DOM에 있으나 화면 밖/투명; 모바일에서만 .open */
   .msheet-ov{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.38);opacity:0;pointer-events:none;transition:opacity .2s}
   .msheet-ov.open{opacity:1;pointer-events:auto}
@@ -370,6 +384,9 @@
   </details>
 </header>
 
+<div class="hub-search" id="hubSearchBar">
+  <input type="search" id="hubSearch" placeholder="전체 검색 — 업체명·브랜드·지역 (예: Minotti, marble, Gessi)">
+</div>
 <section class="group-hub" id="hub" aria-label="대분류"></section>
 <nav id="groupTabs" aria-label="대분류 전환"></nav>
 
@@ -430,7 +447,7 @@
         필터<span class="fbadge" id="mFbadge" style="display:none">0</span>
       </button>
     </div>
-    <div class="desk-filters" id="deskFilters"></div>
+    <div class="desk-filters collapsed" id="deskFilters"></div>
     <div class="mchips" id="mChips"></div>
     <div class="controls2">
       <span id="progress" class="progress">방문 0 / 0</span>
@@ -674,9 +691,9 @@ const DATA = [
    {l:"Marbletrend (캐나다 원산지 — UAE 거점 없음)",u:"https://marbletrend.com/",d:"Murooj 스펙 지정(Red King Onyx·Cote d'Azur). 캐나다 토론토 소재 공급사, UAE 쇼룸/대리점 확인 안 됨 — 현지 오닉스 조달은 UAE 석재상 경유"},
   ],
   items:[
-   {n:"GM Marble",src:"user",loc:"UAE (정확 지점·법인 확인 필요)",tier:"premium",grade:["mid-tier","high-end villa","hotel-commercial"],flag:true,
-    brands:"천연석·대리석·화강암 — ★우리가 견적 먼저 받은 업체 (Glaze와는 다른 곳). 상호 후보: GM Stone(gmstone.ae, Dubai)",
-    pro:"견적 확보 = 가격 기준점. 아래 담당자·견적가·리드타임·메모 칸에 받은 견적 입력",con:"🚩 정확한 상호·연락처·주소 확인 필요. 받은 견적서로 스펙·단가 대조",web:"gmstone.ae"},
+   {n:"GM Stone (견적서 'GM Marble')",src:"user",loc:"Dubai Investments Park 2 (No.597-1181), Dubai",tier:"premium",grade:["mid-tier","high-end villa","hotel-commercial"],flag:true,
+    brands:"천연석·대리석·화강암 (터키계, 채석장 6곳 직영) — ★우리가 견적 먼저 받은 업체 (Glaze와는 다른 곳). 견적서 'GM Marble'의 실제 상호는 GM Stone",
+    pro:"견적 확보 = 가격 기준점. 두바이 쇼룸·SNS(@gmstone.uae) 운영. ☎ +971 52 798 9024 · info@gmstone.ae",con:"🚩 자사 채널로 두바이 실재 확인되나 Google지도 등 독립 디렉터리 미등재 — 방문 시 물리 쇼룸 확인",web:"gmstone.ae"},
    {n:"Petraviva Almarge Marble Trading",src:"user",loc:"Sheikh Zayed Rd, Dubai (Exit 40, 쇼룸3)",tier:"luxury",grade:["high-end villa","hotel-commercial"],
     brands:"프리미엄/럭셔리 천연석·이그조틱 슬랩 + 설계·시공 (모기업 Al Marge 30년+)",pro:"강한 헤리티지(Al Marge), 고급 스펙용 디자인 쇼룸",con:"럭셔리 포지션 = 고가, 예산 물량엔 부적합",web:"petravivadesign.com"},
    {n:"Marwa Marble Establishment",src:"user",loc:"Emirates Industrial City, Al Saja'a, Sharjah (+ Business Bay B2B)",tier:"premium",grade:["high-end villa","hotel-commercial"],
@@ -705,8 +722,8 @@ const DATA = [
     brands:"100% Made in Italy 럭셔리 슬랩 — Calacatta·Statuario·Bianco Lasa 화이트 명가 + 오닉스 (슬랩 데포+쇼룸)",pro:"두바이 최초 이탈리아 제조사 직영 슬랩 데포 = 유통단계 축소·단일 마진, 트로피 북매치·오닉스 기준점",con:"최고가 티어, JAFZA 위치(시내에서 멂). 후기 평점 수치 미확인 — 슬랩 실물 확인 방문 권장",web:"elitestone.it"},
    {n:"Lumahstone",loc:"Dubai (UAE 전역 공급)",tier:"premium",grade:["high-end villa","hotel-commercial"],
     brands:"대형 천연 대리석 슬랩 전문 — 연속 북매치 세트 30~40장까지 (5성 호텔·럭셔리 빌라, 15년+ UAE 공급)",pro:"북매치 연속 슬랩 물량 강함(대형 피처월 필수 조건), 재고분 당주 배송·맞춤 4~8주",con:"슬랩 전문 공급 — 시공 별도. 후기 평점 수치 미확인(자사 정보 위주) — 실물·레퍼런스 확인",web:"lumahstone.ae"},
-   {n:"Sun Italia Marble & Granite",src:"user",added:"2026-07-07",loc:"Bldg 14, St 4, Industrial Area 15, Sharjah",tier:"premium",grade:["mid-tier","high-end villa","hotel-commercial"],flag:true,
-    brands:"천연석·엔지니어드 스톤 도매·가공 — 대리석·화강암·오닉스·트래버틴·석회암 (1982 쿠웨이트, 1992~ 샤르자, 중동 최대급)",pro:"주방 상판·워터젯 대리석 디자인 등 정밀 가공, ☎ +971 6 534 3379",con:"🚩 미등록 PDF엔 '가구(Sun Italia)'로 추정됐으나 실제 UAE 실체는 이 석재상 — 사장님이 가구업체를 지칭한 거면 상호 오인 가능(Solomia 혼동?). 공종 재확인 필요",web:"sunitaliamarble.com"},
+   {n:"Sun Italia Marble & Granite",src:"user",added:"2026-07-07",loc:"Bldg 14, St 4, Industrial Area 15, Sharjah (P.O.Box 27365)",tier:"premium",grade:["mid-tier","high-end villa","hotel-commercial"],
+    brands:"천연석·엔지니어드 스톤 도매·가공 — 대리석·화강암·오닉스·트래버틴·석회암 (1982 쿠웨이트, 1992~ 샤르자, 40년+)",pro:"주방 상판·워터젯 대리석 디자인 등 정밀 가공. 2GIS·yellowpages 등 독립 디렉터리 다수 확인, ☎ +971 6 534 3379",con:"석재상(가구 아님 — 미등록 PDF의 '가구' 추정은 오류로 확인). 프리미엄 가격·샤르자 거점",web:"sunitaliamarble.com"},
   ]},
 
  {id:"tile", title:"Tile / Ceramic / Porcelain", ko:"타일 / 세라믹 / 포세린",
@@ -790,6 +807,14 @@ const DATA = [
    {n:"Euro Art Middle East (EuroArt)",src:"user",added:"2026-07-06",loc:"쇼룸 Al Garhoud · 물류 JAFZA · Al Quoz 배송센터 · AD Najda St",tier:"premium",grade:["mid-tier","high-end villa","hotel-commercial"],
     maps:[{l:"쇼룸 (Al Garhoud)",q:"Euro Art Middle East Al Garhoud Dubai"},{l:"Al Quoz 배송센터",q:"Euro Art Middle East Al Quoz Dubai"}],
     brands:"건축 하드웨어 40년+ — 레버핸들·모티스락·실린더·힌지·도어클로저·패닉엑시트·슬라이딩/유리 도어 피팅·샤워 피팅·가구 피팅·디지털 도어록 (UL/Warrington 인증)",pro:"★사용자 언급. .co.uk 도메인이지만 실체는 두바이 기반 Euro Art Middle East FZCO — 유리·슬라이딩 하드웨어 강함, GCC 지점망. ☎ +971-4-295-1105",con:"페인트 업체 'Euroart LLC'와 별개 회사 — 혼동 주의",web:"euro-art.co.uk"},
+   {n:"Ectratech Trading (Blum 공식 유통)",added:"2026-07-10",loc:"Ras Al Khor Industrial 2, Dubai (UAE·오만·카타르 15개+ 아울렛, 1973~)",tier:"premium",grade:["mid-tier","high-end villa","hotel-commercial"],supply:"trader",
+    brands:"★Blum(경첩·서랍·리프트) UAE 유일 공식 유통 파트너 + Hawa(슬라이딩)·Sugatsune·Domus Line·Formani·Allegion 계열(Schlage·CISA·Von Duprin)·Kleiberit",pro:"Blum 본사 공식 파트너 페이지 등재 확인 — 정품·재고·기술지원 확실, 가구 피팅+도어하드웨어 원스톱. ☎ +971 4 3333963 · WA +971 58 8723028",con:"산업지역 소재 — 쇼룸 접근성↓, B2B 중심(소량 구매 조건 확인)",web:"ectratech.com"},
+   {n:"Eurohouse Trading (GRASS 공식 유통)",added:"2026-07-10",loc:"Al Jabri Bldg #101, Al Majaz 2, Sharjah",tier:"mid",grade:["mid-tier","high-end villa"],supply:"trader",
+    brands:"GRASS(오스트리아 무브먼트 시스템 — 서랍·경첩·슬라이드) UAE 공식 유통 파트너 (바레인·요르단·쿠웨이트 커버)",pro:"Blum 대안 GRASS의 제조사 공인 채널(grass.eu 등재) — 견적 경쟁 구도에 유용. ☎ +971 6 559 9530",con:"자체 웹 없는 소규모 트레이딩 + 샤르자 소재 — 방문 전 전화 필수",web:"grass.eu (파트너 페이지)"},
+   {n:"Haroon Architectural Hardware",added:"2026-07-10",loc:"쇼룸 Al Murar St, Deira · Aspect Tower #1902, Business Bay · Al Barsha 2 (+ 샤르자·AD)",tier:"premium",grade:["mid-tier","high-end villa","hotel-commercial"],supply:"trader",
+    brands:"유럽·미국 도어 하드웨어(1981~, ISO9001) — Evva(고보안 실린더)·Frascio·Tupai·Viefe·FGV·Henderson·KFV·Ojmar + 전자보안·액세스컨트롤",pro:"40년+ GCC 도어하드웨어 전문 유통 — 호텔·상업 프로젝트 스펙 대응 다수",con:"건축 도어하드웨어 치중 — 주방 경첩류는 Ectratech·Eurohouse 병행",web:"haroonco.com"},
+   {n:"H Tambawala Building Material",added:"2026-07-10",loc:"Al Borj St, Naif, Deira, Dubai (1994~)",tier:"mid",grade:["mid-tier","high-end villa"],supply:"trader",
+    brands:"건축 아이언몽거리 — 도어 핸들·락·힌지, 하이엔드 주거·호스피탈리티 피트아웃 공급 전문",pro:"디자이너·피트아웃 업체 대상 프로젝트 단위 공급에 익숙 — 인테리어 실무 궁합. ☎ +971 52 765 2527",con:"Deira 구시가 소규모 — 독점권보단 멀티브랜드 트레이딩",web:"htamba.com"},
   ]},
 
  {id:"lighting", title:"Lighting", ko:"조명",
@@ -857,8 +882,8 @@ const DATA = [
     brands:"독일 Hansgrohe(프리미엄) + AXOR(럭셔리 디자이너 수전·샤워) 브랜드 쇼룸",pro:"★방문. 독일 프리미엄·럭셔리 수전 직접 쇼룸(AXOR 디자이너 콜라보), 품질·AS 신뢰",con:"럭셔리 가격(특히 AXOR). 매립부/부품 리드타임 확인",web:"hansgrohe.ae"},
    {n:"Dornbracht (유통: SANIPEX)",loc:"유통: SANIPEX GROUP, Dubai (UAE 48시간 배송)",tier:"luxury",grade:["high-end villa","hotel-commercial"],
     brands:"독일 초하이엔드 수전·샤워 시스템 (Iserlohn 생산, 소재 98% 유럽) — 호텔·웰니스 레퍼런스",pro:"AXOR·Gessi와 함께 럭셔리 수전 3대장 — 스파/웰니스 스펙 강함, SANIPEX 통해 재고·배송 안정",con:"최고가 티어, 유통 경유 — 프로젝트가는 SANIPEX 계정 협상",web:"dornbracht.com"},
-   {n:"Tucasa",src:"user",added:"2026-07-07",loc:"Dubai (Tucasa Sanitary Ware Trading L.L.C, 스웨덴계)",tier:"premium",grade:["mid-tier","high-end villa"],flag:true,
-    brands:"위생도기·수전·욕조·주방수전 — 자체 브랜드 Ölind Design (AMAL·GRUMS·UPPSALA·BERGO 등)",pro:"★Murooj 572 견적 업체. 유럽 디자인 지향 두바이 위생도기 트레이딩",con:"🚩 물리 쇼룸 주소·전화 사이트 미노출 — 방문 전 확인 필요",web:"tucasadubai.com"},
+   {n:"Tucasa",src:"user",added:"2026-07-07",loc:"Marina Plaza, Office 1506, Dubai Marina, Dubai (Tucasa Sanitary Ware Trading L.L.C, 스웨덴계)",tier:"premium",grade:["mid-tier","high-end villa"],
+    brands:"위생도기·수전·욕조·주방수전 — 자체 브랜드 Ölind Design (AMAL·GRUMS·UPPSALA·BERGO 등)",pro:"★Murooj 572 견적 업체. 유럽 디자인 지향 두바이 위생도기 트레이딩. ☎ +971 52 261 1804 · 영업 +971 56 507 0590",con:"주소는 마리나 오피스타워 내 사무실(Office 1506) — 대형 워크인 쇼룸 아닐 수 있어 방문 예약 권장",web:"tucasadubai.com"},
   ]},
 
  {id:"paint", title:"Paint", ko:"페인트",
@@ -878,8 +903,8 @@ const DATA = [
     brands:"실내외 장식·목재 코팅 (소비자+트레이드)",pro:"강한 브랜드 인지, 일관 품질, 우수 컬러/틴팅 시스템",con:"로컬 대비 프리미엄, 딜러 경유",web:"dulux.ae"},
    {n:"SAFATCO Trading",loc:"Dubai (1992~)",tier:"mid",grade:["apartment","mid-tier"],
     brands:"National·Asian·Jotun·Berger 공인 도매",pro:"여러 브랜드 단일 소스, 트레이드/도매 편리, 벌크",con:"유통 마진, 디자인/스펙 쇼룸 아님",web:"safatcotrading.com"},
-   {n:"Hempel",loc:"Dubai · 유통채널",tier:"premium",grade:["hotel-commercial"],flag:true,
-    brands:"보호·마린 + 일부 장식 코팅",pro:"보호코팅 강한 혈통, 철골/구조/상업에 적합",con:"🚩 장식 인테리어보단 산업/보호 지향",web:"hempel.com"},
+   {n:"Hempel (Hempel Paints (Emirates) LLC)",loc:"제조 Mussafah Ind.15, AD · 유통 Al Qusais Ind.1, Dubai",tier:"premium",grade:["hotel-commercial"],
+    brands:"보호·마린 + 일부 장식 코팅 (UAE 법인·공장 보유)",pro:"보호코팅 강한 혈통, 철골/구조/상업에 적합. AD 공장+두바이 유통 거점 확인",con:"장식 인테리어보단 산업/보호 코팅 지향 — 부위 확인",web:"hempel.com"},
   ]},
 
  {id:"gypsum", title:"Gypsum / Ceiling / Partition", ko:"석고보드 / 천장 / 칸막이",
@@ -893,6 +918,14 @@ const DATA = [
     brands:"석고보드·천장타일·MF/T-grid 천장 시스템·파티션 프레임 (트레이드 픽업)",pro:"Al Quoz·Ras Al Khor가 석고/천장 자재 트레이더 허브 — 실무 자재 접근 쉬움",con:"🚩 특정 독립 트레이더 정확 주소는 직접 확인 권장",web:"gyproc.ae"},
    {n:"Gemini Building Materials",src:"user",loc:"Al Quoz Ind. 4, Dubai (+ Deira·Ras Al Khor·Al Qusais·AD·Sharjah·RAK·Fujairah 30+지점)",tier:"mid",grade:["apartment","mid-tier","high-end villa","hotel-commercial"],also:["paint"],map:"https://maps.app.goo.gl/beg9Axgfo2MNorp88",
     brands:"UAE 최대급 석고보드·건축자재 유통 (Knauf·Gyproc·USG·AMF·Jotun 페인트·Bosch·DeWalt 공구) (1995~)",pro:"★방문. 석고/드라이월 최대 유통망(30+지점)=재고·접근성 최강, 페인트·공구까지 원스톱",con:"유통/수입상(자체 제조 아님) — 대량가는 계정·견적 협상 필요",web:"geminiuae.com"},
+   {n:"Gypsemna",added:"2026-07-10",loc:"공장 ICAD City 2, Mussafah, AD · 두바이 영업 Al Fajr Business Centre, Al Garhoud",tier:"mid",grade:["apartment","mid-tier","hotel-commercial"],supply:"maker",
+    brands:"UAE 최초·역내 최대급 석고보드 공장(연 5,000만 m²) — 일반/방습(MR)/방화(FR)/MFR 보드·천장타일",pro:"로컬 생산 = 리드타임·물량 대응 유리(수입 브랜드 대비), 대형 프로젝트 직납 실적. ☎ +971 2 550 0405",con:"범용 보드 중심 — 고급 어쿠스틱 등 프리미엄 스펙 라인업 제한적",web:"gypsemna.com"},
+   {n:"SAS International (SAS Middle East)",added:"2026-07-10",loc:"European Business Center, Dubai Investment Park (트레이닝 시설 운영)",tier:"luxury",grade:["hotel-commercial","high-end villa"],supply:"maker",
+    brands:"영국계 메탈 천장·어쿠스틱 배플·비스포크 건축 금속 마감 — Apple HQ Dubai·Aldar HQ 납품",pro:"하이엔드 메탈 천장의 기준 브랜드(중동 30년+) — 럭셔리 오피스·호텔 스펙 직결. ☎ +971 4 8855 545",con:"가격 최상급·영국 생산 기반 리드타임 김 — 예산형 부적합",web:"sasint.ae"},
+   {n:"ATE International Building Materials",added:"2026-07-10",loc:"Dubai Investment Park 1 (+ Deira 쇼룸·창고)",tier:"budget",grade:["apartment","mid-tier"],supply:"trader",
+    brands:"1989~ 드라이월 풀 시스템 스토키스트 — 석고보드·시멘트보드·GI 스터드/트랙·조인트 컴파운드·천장타일",pro:"UAE 최대급 재고 — 브랜드 혼합 발주·긴급 물량 강함. ☎ +971 4 885 3313",con:"유통 중심 — 스펙 커스텀·기술지원은 제조사 대비 약함",web:"ate.ae"},
+   {n:"Dana Steel (DANA Group)",added:"2026-07-10",loc:"본사 Centurion Star Bldg, Deira · 공장 Dubai Industrial City (+ Ajman·UAQ)",tier:"budget",grade:["apartment","mid-tier","hotel-commercial"],supply:"maker",
+    brands:"경량철골 제조 — GI 스터드/트랙·퍼링채널·메인채널·월앵글·스프링티 (BS EN 14195·ASTM C645 준거)",pro:"현지 롤포밍 제조 = 규격 맞춤·대량 단가 경쟁력. ☎ +971 4 221 7273",con:"하지재(프레임) 전문 — 보드·천장타일은 별도 소싱",web:"danasteeluae.com"},
   ]},
 
  {id:"glass", title:"Glass / Mirror / Shower Partition", ko:"유리 / 거울 / 샤워 파티션",
@@ -911,6 +944,14 @@ const DATA = [
     brands:"오피스 유리 파티션 시스템 전문 (영국 Optima Group MENA 법인) — 단일/이중 글레이징(Optima 36·Revolution 54/100), 아쿠스틱 파티션 Rw45~52dB, 도어 시스템(Axile·Elite 등)·가변형 벽체",pro:"★사용자 추가. 영국 브랜드 기반 오피스 글레이징 전문, 설계·제조·설치 일괄 통제(높은 차음 성능). ☎ +971-4-563-1300",con:"오피스·상업 전용 — 주거 샤워/거울 파티션은 취급 아님. Google 리뷰 지표 미공개",web:"optimasystems.ae",ig:"https://www.instagram.com/optima_glassmena/"},
    {n:"De Sound (Desound)",src:"user",added:"2026-07-07",loc:"Dubai (UAE 전역 서비스)",tier:"premium",grade:["high-end villa","hotel-commercial"],
     brands:"방음 접합유리 (6+1.5 PVB+6+12 spacer+6, STC 45)·방음도어·acoustic pods — 호텔·오피스·고층주거",pro:"★Murooj 572 방음유리 지정 스펙(STC45) 정합. 제품 스펙·가격(AED 1,150~1,750/sqm) 공개",con:"물리 쇼룸 주소는 사이트에서 추가 확인 필요(전 에미리트 서비스만 명시)",web:"desound.ae"},
+   {n:"Gulf Glass Industries (GGI)",added:"2026-07-10",loc:"University Rd, Sharjah 공장 · 두바이 접점 Ras Al Khor",tier:"premium",grade:["high-end villa","hotel-commercial"],supply:"maker",
+    brands:"1991~ 건축용 가공유리 제조 — 강화·접합·방탄·방화·곡면(벤트)·복층(IGU)·장식유리, 50여 개국 수출",pro:"곡면·방화유리 등 고난도 가공을 한 공장에서 해결하는 로컬 제조사. 샤르자 ☎ +971 6 538 5500 · 두바이 +971 4 333 2511",con:"본사·공장 샤르자 — 두바이 현장 물류 일정 협의",web:"gulfglass.ae"},
+   {n:"Lumiglass Industries",added:"2026-07-10",loc:"Lumiglass Bldg, SZR변, Al Quoz Industrial 4, Dubai",tier:"premium",grade:["high-end villa","hotel-commercial"],supply:"maker",
+    brands:"특수 안전유리 제조(2003~) — 접합·방탄·내폭(anti-blast)·보안유리·건축용 접합 평판",pro:"고사양 안전유리 인증 보유 — 럭셔리 빌라 보안 사양·호텔 특수 구간. ☎ +971 4 340 3919",con:"Emirates Glass와 같은 Dubai Investments 계열 — 견적 협상 시 그룹 겹침 참고",web:"lumiglass.ae"},
+   {n:"Huzefa Haider Glass Industries",added:"2026-07-10",loc:"Warehouse 2, Al Quoz Industrial 3, Dubai (32,000sqft)",tier:"mid",grade:["apartment","mid-tier","high-end villa"],supply:"maker",
+    brands:"강화유리·특수 미러 가공 전문 독립 프로세서 (2015~)",pro:"독립계 = 발주 유연성·가격 협상 여지, Al Quoz 소재 현장 근접. ☎ 800 525252 · +971 4 529 4368",con:"업력 10년 안팎 — 대형 커튼월급 물량은 검증 필요",web:"huzefahaiderdubai.com"},
+   {n:"Crystal Casa Glass & Aluminum Works",added:"2026-07-10",loc:"Warehouse 3, Jebel Ali Industrial 1, Dubai",tier:"mid",grade:["mid-tier","high-end villa"],supply:"maker",
+    brands:"프레임리스 샤워 인클로저·유리 파티션·미러·유리 난간·슬라이딩 도어 — 자체 공장 제작+시공 일괄",pro:"빌라 욕실 단위 맞춤 제작·시공 원스톱(팩토리 다이렉트). ☎ +971 52 150 0485 · +971 4 410 7284",con:"시공업체 규모 — 초대형 다호실 동시 물량은 캐파 확인",web:"crystalcasa.ae"},
   ]},
 
  {id:"doors", title:"Doors & Windows", ko:"문 / 창호 (방화문 포함)",
@@ -1019,10 +1060,10 @@ const DATA = [
     brands:"Miele 빌트인 오븐·스팀·쿡탑·냉장·식기·세탁",pro:"제조사 직영 — 풀 보증·정품 서비스·최고 신뢰 평판",con:"최고가 티어, 단일 브랜드",web:"miele.ae"},
    {n:"Gaggenau UAE (공식)",loc:"Gaggenau Showroom, Dubai (직영)",tier:"luxury",grade:["high-end villa","hotel-commercial"],map:"https://maps.app.goo.gl/9MwMQ3TfXjoSMA2Z9",
     brands:"Gaggenau 울트라 프리미엄 빌트인 (오븐·바리오 쿡탑·와인컬럼)",pro:"트로피 키친 헤일로 브랜드, 디자인 스테이트먼트",con:"최고가, 긴 리드타임 가능",web:"gaggenau.com/ae"},
-   {n:"GOETTLING Interiors",loc:"Business Bay, Dubai",tier:"luxury",grade:["high-end villa","hotel-commercial"],also:["kitchen","cabinet","furniture"],
+   {n:"GOETTLING Interiors",loc:"Business Bay, Dubai",tier:"luxury",grade:["high-end villa","hotel-commercial"],also:["kitchen","cabinet","furniture","fitout-resi","fitout-comm"],tags:["조이너리"],
     brands:"Miele·Gaggenau·Siemens·Bora(다운드래프트)·Elica",pro:"Bora·Elica(후드/배기 전문) + 독일 메이저 — 풀 패키지",con:"부티크/인테리어 주도 쇼룸",web:"goettling.me"},
-   {n:"KitchenByPro",loc:"UAE (온라인 전문, 2018~ · 물리 쇼룸 비공개)",tier:"premium",grade:["mid-tier","high-end villa"],flag:true,
-    brands:"Siemens·Bosch·Teka·Elba·Elica·Liebherr·CM",pro:"Bosch/Siemens + Liebherr(프리미엄 냉장)·Elica 후드, 실용 계약 믹스. ☎ +971 50 471 7253, 전 에미리트 1~4일 배송",con:"🚩 순수 온라인 리테일러(오프라인 주소 없음). 럭셔리 브랜드 깊이 약함(Gaggenau/Miele 미확인)",web:"kitchenbypro.com"},
+   {n:"KitchenByPro",loc:"Diamond Business Centre-C, Floor 3, Arjan (Al Barsha South 3), Dubai (2018~)",tier:"premium",grade:["mid-tier","high-end villa"],
+    brands:"Siemens·Bosch·Teka·Elba·Elica·Liebherr·CM",pro:"Bosch/Siemens + Liebherr(프리미엄 냉장)·Elica 후드. 맞춤 주방 리노베이션+가전. ☎ +971 50 471 7253, 전 에미리트 1~4일 배송",con:"하이스트리트 쇼룸은 없음(고객 방문·현장 시공 방식). 럭셔리 브랜드 깊이 약함(Gaggenau/Miele 미확인)",web:"kitchenbypro.com"},
    {n:"Better Life UAE",loc:"Dubai·AD (몰 매장 다수)",tier:"premium",grade:["apartment","mid-tier","high-end villa"],
     brands:"Smeg 공인 + Siemens·Gorenje·Zanussi·Terim",pro:"강한 소매 접근성, Smeg 공인, 중급프리미엄 레인지",con:"럭셔리 빌트인 전문 아님, Bosch 가용성 확인",web:"betterlifeuae.com"},
    {n:"Häcker (Dubai 쇼룸)",loc:"Dubai",tier:"luxury",grade:["high-end villa","hotel-commercial"],also:["kitchen"],
@@ -1035,7 +1076,7 @@ const DATA = [
    {l:"PointPod 팝업 콘센트 릴",u:"https://www.instagram.com/reel/DaCR54bTXAz/",d:"호주 — 주방 아일랜드 상판 매립 팝업 콘센트(GPO+USB) 아이디어"},
   ],
   items:[
-   {n:"Concept 5",src:"user",loc:"워크샵: Dubai Investment Park 1 (법인: Concept 5 Kitchen & Wood Industries LLC)",tier:"luxury",grade:["high-end villa","hotel-commercial"],
+   {n:"Concept 5",src:"user",loc:"워크샵: Dubai Investment Park 1 (법인: Concept 5 Kitchen & Wood Industries LLC)",tier:"luxury",grade:["high-end villa","hotel-commercial"],also:["fitout-resi","fitout-comm"],tags:["조이너리","밀워크"],
     brands:"비스포크 조이너리 — 맞춤 주방·워드로브·배니티·건축 밀워크 (유럽 디자인+자체 제작, 레퍼런스: Palm Jumeirah 펜트하우스·Al Barari 빌라)",pro:"★사용자 언급 업체. 주방+붙박이+밀워크 원스톱 자체 제작 = 단일 마진·수정 유연·현지 리드타임. 실재 법인·워크샵 확인됨",con:"수입 브랜드 카셰는 없음. 후기 평점 수치 미확인 — 방문 시 레퍼런스 현장·목업 확인",web:"concept5.ae"},
    {n:"bulthaup (OBEGI Home)",loc:"Dubai Design District (d3) — Designers' Lab (예약제)",tier:"luxury",grade:["high-end villa","hotel-commercial"],
     brands:"독일 초하이엔드 키친 시스템 b3 등 (유통: OBEGI Home)",pro:"키친의 에르메스급 포지션 — 트로피 키친 기준점, d3 디자이너 랩",con:"최고가 티어, 수입 리드타임 김, 예약제(워크인 X)",web:"bulthaup.com"},
@@ -1047,9 +1088,9 @@ const DATA = [
     brands:"독일 SieMatic 럭셔리 키친(1929~) — 핸들리스 오리지널",pro:"메이저 로컬 그룹(Easa Saleh Al Gurg) 유통 = 설치·AS 안정, 클래식~모던 폭",con:"럭셔리 가격, 유통 경유",web:"siematic-uae.com"},
    {n:"OPPEIN UAE",loc:"Sheikh Zayed Rd 쇼룸, Dubai · Abu Dhabi",tier:"mid",grade:["apartment","mid-tier","high-end villa"],also:["cabinet"],
     brands:"중국 최대 캐비닛 제조 — 주방·워드로브·배니티·전체 하우스 솔루션",pro:"대형 제조 = 가격 경쟁력·짧은 리드타임, 주방+붙박이 패키지, SZR 쇼룸 실물 확인",con:"독일/이탈리아 대비 브랜드 카셰·디테일 마감 확인 필요 — 중급 물량에 적합",web:"oppein.ae"},
-   {n:"Bella Cucina",src:"user",added:"2026-07-07",loc:"753, D94, Jumeira St, Umm Suqeim 2, Dubai (Umm Suqeim 도서관 맞은편)",tier:"premium",grade:["high-end villa","hotel-commercial"],also:["cabinet"],
+   {n:"Bella Cucina",src:"user",added:"2026-07-07",loc:"753, D94, Jumeira St, Umm Suqeim 2, Dubai (Umm Suqeim 도서관 맞은편)",tier:"premium",grade:["high-end villa","hotel-commercial"],also:["cabinet","fitout-resi","fitout-comm"],tags:["조이너리","밀워크"],
     brands:"맞춤 이탈리아식 주방·캐비닛리 (Lafabbrica 계열), 3D 렌더링·Carrara 대리석 상판",pro:"★Palm 4601 견적 실적. 두바이 자체 쇼룸+제작시설, ☎ +971 58 818 2255 · Info@bellacucina.ae",con:"'Dubai 공장' 주장은 웹상 독립 검증 안 됨 — 방문 시 실물·리드타임 확인",web:"bellacucina.ae",ig:"https://www.instagram.com/bellacucina.ae/"},
-   {n:"Aventini Italian Kitchens",src:"user",added:"2026-07-07",loc:"Marina Plaza, Office 1506, Dubai Marina, Dubai",tier:"premium",grade:["high-end villa","hotel-commercial"],also:["cabinet"],
+   {n:"Aventini Italian Kitchens",src:"user",added:"2026-07-07",loc:"Marina Plaza, Office 1506, Dubai Marina, Dubai",tier:"premium",grade:["high-end villa","hotel-commercial"],also:["cabinet","fitout-resi","fitout-comm"],tags:["조이너리","밀워크"],
     brands:"맞춤 이탈리아식 주방·워드로브 설계·공급·설치 — 가전 파트너 Bosch·Siemens·Miele·Teka·Franke·Barazza·Quooker (시작가 ~AED 100k)",pro:"★Murooj 572 견적 업체. Marina Plaza 쇼룸, 하이엔드 가전 통합, ☎ +971 4 335 5377 / +971 56 710 9629",con:"자사 웹 접속 제한(403) — 주소는 SNS·검색 교차확인. 방문 확인 권장",web:"aventini-me.com",ig:"https://www.instagram.com/aventini_italiankitchens/"},
   ]},
 
@@ -1063,12 +1104,12 @@ const DATA = [
   items:[
    {n:"OBEGI HOME",src:"user",added:"2026-07-06",loc:"Jumeirah Beach Rd (Burj Al Arab 인근), Dubai (1973~)",tier:"luxury",grade:["high-end villa","hotel-commercial"],supply:"trader",also:["kitchen","doors"],
     brands:"럭셔리 멀티브랜드 쇼룸 34+ — HOLLY HUNT 전 컬렉션(가구·조명·텍스타일·아웃도어) + B&B Italia·Flexform·Poliform·Porada·Paola Lenti·Artemide·Flos + bulthaup(키친)·Lualdi(도어) 유통",pro:"★사용자 언급. UAE 대표 럭셔리 가구 하우스 — 가구·조명·키친·도어 원스톱 스펙. ☎ +971-4-394-8161 · WA +971-56-937-6193",con:"유통 경유 럭셔리 프라이싱 — 브랜드별 조건 비교 권장",web:"obegihome.com",ig:"https://www.instagram.com/obegihome/"},
-   {n:"EMIL Interiors",src:"user",added:"2026-07-06",loc:"Sheikha Noora Tower 805, Barsha Heights (Al Thanyah 1), Dubai",tier:"luxury",grade:["high-end villa","hotel-commercial"],supply:"trader",flag:true,
-    brands:"HOLLY HUNT 중동 공식 에이전트 — UAE는 텍스타일·월커버링 한정 (가구는 OBEGI HOME 담당). Palm 4601 실납품 확인(업홀스터리·벽지 UP/WP 코드)",pro:"★사용자 언급. Holly Hunt 로케이터 등재 재확인(2026-07). 담당 Anna ☎ +971 55 552 2548 · info@emilinteriors.com",con:"🚩 자사 웹사이트 여전히 접속 불가·미발견 — 연락은 전화(Anna) 또는 Holly Hunt 로케이터 경유",web:"hollyhunt.com/locations/emil-interiors-dubai"},
+   {n:"EMIL Interiors",src:"user",added:"2026-07-06",loc:"Sheikha Noora Tower 805, Barsha Heights (Al Thanyah 1), Dubai",tier:"luxury",grade:["high-end villa","hotel-commercial"],supply:"trader",also:["wallpaper"],
+    brands:"HOLLY HUNT 중동 공식 에이전트 — UAE는 텍스타일·월커버링 한정 (가구는 OBEGI HOME 담당). Palm 4601 실납품 확인(업홀스터리·벽지 UP/WP 코드)",pro:"★사용자 언급. Holly Hunt 공식 로케이터에 'Emil Interiors | Dubai' 지정 에이전트 등재 확인. 담당 Anna ☎ +971 55 552 2548 · info@emilinteriors.com",con:"자사 독립 웹사이트 없음 — 연락은 전화(Anna) 또는 Holly Hunt 로케이터 경유",web:"hollyhunt.com/locations/emil-interiors-dubai"},
    {n:"Casanova Furniture (CASA NOVA)",src:"user",added:"2026-07-06",loc:"SZR(Smark Bldg) · Al Quoz Ind. 3 쇼룸, Dubai",tier:"premium",grade:["mid-tier","high-end villa"],supply:"trader",
     maps:[{l:"메인 쇼룸 (SZR Exit 40)",q:"Casanova Furniture Main Branch Dubai"},{l:"Al Quoz Ind. 3",q:"Casanova Furniture Al Quoz Dubai"}],
     brands:"이탈리아 수입 럭셔리 가구 (리빙룸 중심, 업력 27년+ 표기) — 메인 쇼룸 Exit 40, Al Sayyah Bldg(SZR), 매일 10:00–22:00 · G★4.2(65)",pro:"★사용자 언급·지도 확인. 이탈리아 디자인·제조 수입 가구, 쇼룸 2곳(SZR·Al Quoz)",con:"평점 G★4.2로 중상위 — 방문 시 품질·마감 직접 확인",web:"casanovadubai.com",ig:"https://www.instagram.com/casanovafurnituredubai/"},
-   {n:"Radium Nobel Furniture",src:"user",added:"2026-07-06",loc:"Nadd Al Hamar, Ras Al Khor, Dubai",tier:"luxury",grade:["high-end villa"],also:["kitchen"],
+   {n:"Radium Nobel Furniture",src:"user",added:"2026-07-06",loc:"Nadd Al Hamar, Ras Al Khor, Dubai",tier:"luxury",grade:["high-end villa"],also:["kitchen","fitout-resi"],tags:["조이너리"],
     brands:"럭셔리 맞춤 워크인 워드로브·가구 (중국계, 이탈리아 디자인팀 협업 표방) — 가죽 마감 공예, 대리석·유리·미러 연출",pro:"★사용자 언급. 하이엔드 워드로브 커스터마이징 특화, Ras Al Khor 쇼룸(10:00–20:00). ☎ +971-4-575-7802",con:"정식 웹사이트 없음(SNS·블로그만) — 레퍼런스·품질 방문 확인 필요",web:"radiumnobel.blogspot.com",ig:"https://www.instagram.com/radium_nobel/"},
    {n:"Intermetal",loc:"Dubai (1989~, 40만 sqft 공장)",tier:"premium",grade:["mid-tier","hotel-commercial"],
     brands:"계약 가구 제조 — 호텔·리조트·레스토랑·오피스·헬스케어",pro:"대형 로컬 제조=물량 캐파·커스텀·리드타임 통제",con:"계약/물량 포커스 — 부티크성 약함",web:"intermetal.com"},
@@ -1082,8 +1123,8 @@ const DATA = [
     brands:"프리미엄 라이프스타일 홈퍼니싱 (주거+호텔 FF&E)",pro:"통일감 있는 컬렉션, 따뜻한 미감 — 빌라/부티크 호텔",con:"소매 지향 — 고트래픽 내구성 확인",web:"marinahomeinteriors.com"},
    {n:"Fabric Library",loc:"SZR 쇼룸 · Dubai Textile City 창고",tier:"premium",grade:["mid-tier","high-end villa","hotel-commercial"],
     brands:"Bru Textiles(벨기에) 계열 유통 — FibreGuard(스테인프리)·FR-One(방염)·Sansaar. ※Romo/Kvadrat 등 유럽 디자이너 밀 미취급 확인",pro:"✅웹 재검증(2026-07): FR-One 방염 계약 패브릭(BS 5867·NFPA 701·IMO) — 호텔 계약 대응 강함. 쇼룸 ☎ +971-4-323-3237",con:"유럽 럭셔리 밀 없음 — 디자이너 밀은 Aati 등 병행. '럭셔리'보다 계약/실용 포트폴리오",web:"fabriclibrary.com"},
-   {n:"Al Kilani Fabrics",loc:"Abu Dhabi 본사(Musaffah) · Sharjah 창고 (Industrial Area 4)",tier:"budget",grade:["apartment","mid-tier"],flag:true,
-    brands:"커튼·업홀스터리 홈 패브릭 도매",pro:"도매 가격 물량, 가성비 FF&E 패브릭. AD 본사 ☎ +971 2 634 9300 · 샤르자 ☎ +971 6 533 2159",con:"🚩 재확인(2026-07): UAE 매장은 AD·샤르자뿐 — Dubai 물리 지점 미확인(배송/영업 커버리지로 보임). 호텔용 Martindale·방화등급 확인",web:"alkilanifabrics.com"},
+   {n:"Al Kilani Fabrics",loc:"Abu Dhabi 본사(Musaffah I-CAD 3) · Sharjah 창고 (Industrial Area 4)",tier:"budget",grade:["apartment","mid-tier"],
+    brands:"커튼·업홀스터리 홈 패브릭 도매",pro:"도매 가격 물량, 가성비 FF&E 패브릭. AD 본사 ☎ +971 2 634 9300 · 샤르자 ☎ +971 6 533 2159",con:"UAE 거점은 AD·샤르자뿐(자사 지점목록에 Dubai 없음 — 두바이는 배송/영업 커버). 호텔용 Martindale·방화등급 확인",web:"alkilanifabrics.com"},
    {n:"2XL Home",loc:"Dubai·Sharjah·AD·Al Ain·Fujairah",tier:"premium",grade:["mid-tier","high-end villa"],
     brands:"프렌치풍 글래머러스 가구, 장식 마감",pro:"넓은 다(多)에미리트 쇼룸망, 클래식/포멀 빌라 강함",con:"특정 오너먼트 스타일, 계약 내구성 포지션 아님",web:"2xlhome.com"},
    {n:"Western Furniture",loc:"Sheikh Zayed Rd · Karama · Dubai Hills · AD",tier:"luxury",grade:["high-end villa"],
@@ -1092,28 +1133,64 @@ const DATA = [
     brands:"컨템포러리 가구 + 홈웨어/데코",pro:"신뢰도 있는 컨템포러리 레인지, 몰 접근성·실물 확인",con:"메인스트림 스타일 — 울트라 럭셔리 맞춤엔 부적합",web:"crateandbarrel.com"},
    {n:"THE One",loc:"Mall of the Emirates · Dubai Hills 등",tier:"mid",grade:["apartment","mid-tier"],
     brands:"자체 디자인 가구 + 홈데코/액세서리 (클래식~컨템포러리)",pro:"강한 자체 브랜드, 합리적 가격, 풀 홈데코",con:"맞춤/럭셔리급 아님, 대중적 스타일링",web:"theone.ae"},
-   {n:"Humanspace",src:"user",loc:"Dubai (쇼룸·오피스)",tier:"premium",grade:["mid-tier","hotel-commercial"],flag:true,map:"https://maps.app.goo.gl/wX9CuC821Fhu5wJRA",
-    brands:"오피스/워크스페이스 컨트랙트 가구 — 좌석·데스크·수납·파티션 (Herman Miller/MillerKnoll 등 취급 추정)",pro:"★방문. 오피스·컨트랙트 가구 전문(주거 FF&E와 별개 축), 워크스페이스 솔루션",con:"🚩 정확 취급 브랜드 방문 시 확인. 오피스 중심 — 주거 럭셔리 가구는 별도",web:"humanspace.com"},
+   {n:"Humanspace",src:"user",loc:"Level 45, U-Bora Office Tower, Business Bay, Dubai",tier:"premium",grade:["mid-tier","hotel-commercial"],map:"https://maps.app.goo.gl/wX9CuC821Fhu5wJRA",
+    brands:"오피스/워크스페이스 컨트랙트 가구 — Nucleo·Martex·Bisley·Orangebox·Hush 등 (Herman Miller 아님)",pro:"★방문. 오피스·컨트랙트 가구 전문(주거 FF&E와 별개 축). ☎ +971 4 456 1668 · info@humanspace.com",con:"오피스 중심 — 주거 럭셔리 가구는 별도. ※자사 사이트 일부 스팸 주입 흔적 — 링크 접속 시 주의",web:"humanspace.com"},
    {n:"Minotti Dubai (플래그십)",loc:"Jumeirah 3, Dubai (2024 오픈, 900sqm 2층 — 파트너 Al Tayer Insignia)",tier:"luxury",grade:["high-end villa","hotel-commercial"],
     brands:"이탈리아 Minotti 단독 플래그십 — 리빙·라운지·다이닝 풀 컬렉션 (빌라 컨셉 쇼룸)",pro:"이탈리아 하이엔드 가구 기준점을 단독 매장에서 — 멀티브랜드(Aati)보다 컬렉션 깊음",con:"단일 브랜드·최고가. Aati(같은 Al Tayer 계열)와 조건 비교 가능",web:"minottidubai.com"},
    {n:"Solomia Home",src:"user",added:"2026-07-07",loc:"Versace Home, Dubai Mall Zabeel (DIFC/Za'abeel 2), Dubai",tier:"luxury",grade:["high-end villa","hotel-commercial"],supply:"trader",
     brands:"이탈리아 럭셔리 가구 + 인테리어 디자인 — Versace Home 공식 딜러, Minotti·Poltrona Frau·B&B Italia·Cattelan Italia·Flexform·Porada 취급",pro:"★Palm 4601 견적 업체. 최상위 이탈리아 브랜드 공식 딜러, Dubai Mall/DIFC 입지, ☎ +971 58 687 9414",con:"최고가대 — 예산형 프로젝트 부적합",web:"solomia-home.ae",ig:"https://www.instagram.com/solomia.home/"},
    {n:"Nammos (nammosstyle)",src:"user",added:"2026-07-07",loc:"Sheikh Zayed Rd, Nad Elshiba Real Estate Bldg 2F (209-210), Dubai",tier:"premium",grade:["mid-tier","high-end villa"],
     brands:"맞춤 럭셔리 가구·인테리어 — 소파/모듈좌석·다이닝·테이블·조명·침대·카펫, 3D 비주얼 (운영사 KCC)",pro:"★Murooj 572 견적 업체. 맞춤 제작 가구, ☎ +971 56 627 0578 · Info@nammosstyle.com",con:"⚠️ Four Seasons 비치클럽 'Nammos'(nammos.com)와 동명 — 가구업체는 nammosstyle.com이 맞음(혼동 주의)",web:"nammosstyle.com"},
-   {n:"Bold Furniture",src:"user",added:"2026-07-07",loc:"Indigo Building 2, Sheikh Zayed Rd, Al Safa 2, Dubai",tier:"luxury",grade:["high-end villa","hotel-commercial"],also:["kitchen","doors"],
+   {n:"Bold Furniture",src:"user",added:"2026-07-07",loc:"Indigo Building 2, Sheikh Zayed Rd, Al Safa 2, Dubai",tier:"luxury",grade:["high-end villa","hotel-commercial"],also:["kitchen","doors","fitout-resi","fitout-comm"],tags:["조이너리","밀워크"],
     brands:"풀 맞춤 럭셔리 가구 + 조이너리(캐비닛리·도어·월패널) + 인테리어 피트아웃 (주거/상업/리테일/호스피탈리티)",pro:"★Palm 4601 견적 업체. SZR 쇼룸 + UAE 자체 공장(2GIS 등재), 원스톱 가구+밀워크, ☎ +971 4 338 8722",con:"장인 225명·20년 등 수치는 자체 주장 — 방문 시 목업 확인",web:"bolduae.com",ig:"https://www.instagram.com/bolduae/"},
    {n:"Peter Bruce Furniture (PBFM)",src:"user",added:"2026-07-07",loc:"Dubai Investment Park 2, Jebel Ali (10/1, 44 St), Dubai",tier:"premium",grade:["mid-tier","high-end villa","hotel-commercial"],supply:"maker",
     brands:"고급 맞춤 가구 제조 — 업홀스터리·자수·월커버링·커튼·쿠션 (Peter Bruce Furniture Manufacturing LLC)",pro:"★Palm 4601 견적 업체. 다중 독립 소스 확인(두바이 상공회의소 등록), DIP2 자체 제조공장, ☎ +971 4 883 0620",con:"쇼룸형보다 제조사(디자이너 대상 B2B 성격) — 소매 방문 아님",web:"pbfm.ae"},
-   {n:"Palm Living",src:"user",added:"2026-07-07",loc:"Jumeirah Golf Estates 쇼룸, Dubai (2020~)",tier:"premium",grade:["mid-tier","high-end villa"],
+   {n:"Palm Living",src:"user",added:"2026-07-07",loc:"Jumeirah Golf Estates 쇼룸, Dubai (2020~)",tier:"premium",grade:["mid-tier","high-end villa"],also:["fitout-resi"],tags:["조이너리","밀워크"],
     brands:"유럽 미니멀 스타일 가구 + 맞춤 가구/조이너리 + 인테리어 디자인 (UAE 자체 공장 made-to-order)",pro:"★Palm 4601 견적 업체. UAE 자체 제작(맞춤·리드타임 유리), 주거·상업 원스톱, 두바이·AD·RAK 서비스",con:"대형 브랜드 대비 인지도 낮음, 쇼룸 1곳(온라인 중심)",web:"palmlivingae.com"},
-   {n:"The Rug Company",src:"user",added:"2026-07-07",loc:"Villa 70 Al Wasl Rd, Jumeirah · Unit G65 Al Serkal Ave, Al Quoz 1, Dubai",tier:"luxury",grade:["high-end villa","hotel-commercial"],supply:"trader",
+   {n:"The Rug Company",src:"user",added:"2026-07-07",loc:"Villa 70 Al Wasl Rd, Jumeirah · Unit G65 Al Serkal Ave, Al Quoz 1, Dubai",tier:"luxury",grade:["high-end villa","hotel-commercial"],supply:"trader",also:["rug"],
     maps:[{l:"Bungalow · Al Wasl Rd",q:"The Rug Company Bungalow Al Wasl Road Dubai"},{l:"Al Serkal Avenue",q:"The Rug Company Al Serkal Avenue Al Quoz Dubai"}],
     brands:"핸드메이드 프리미엄 러그 (디자이너 협업 컬렉션) + 큐레이티드 액세서리 — 중동 첫 플래그십",pro:"★Palm 4601·Murooj 572 카펫 지정 브랜드. 글로벌 명품 러그 본사 직영, 두바이 2개 거점, ☎ +971 4 379 1217",con:"고가, 러그 단일 카테고리",web:"ae.therugcompany.com"},
    {n:"Loom Collection",src:"user",added:"2026-07-07",loc:"Warehouse 17, Al Hawai Compound, Dubai",tier:"premium",grade:["apartment","mid-tier","high-end villa"],supply:"trader",map:"https://maps.app.goo.gl/EHck7kx4e4GrwsUG7",
-    brands:"큐레이티드 가구·홈데코 + 러그(핸드우븐 실크·울·코튼) — 호주·스칸디나비아 디자인 감성 (2019~, The Loom Collection Furniture Trading LLC)",pro:"★사용자 추가·웹검증. 합리적 가격대 스타일 가구+러그, 10만 sqft 창고·두바이 3일 화이트글러브 배송",con:"수입 리테일러(자체 제조 아님) — 초럭셔리 맞춤보다 스타일링 완제품 중심. ※유사명 'Lush Loom'(lushloom.ae)은 별개 업체",web:"loomcollection.com",ig:"https://www.instagram.com/the_loom_collection/"},
+    also:["rug"],brands:"큐레이티드 가구·홈데코 + 러그(핸드우븐 실크·울·코튼) — 호주·스칸디나비아 디자인 감성 (2019~, The Loom Collection Furniture Trading LLC)",pro:"★사용자 추가·웹검증. 합리적 가격대 스타일 가구+러그, 10만 sqft 창고·두바이 3일 화이트글러브 배송",con:"수입 리테일러(자체 제조 아님) — 초럭셔리 맞춤보다 스타일링 완제품 중심. ※유사명 'Lush Loom'(lushloom.ae)은 별개 업체",web:"loomcollection.com",ig:"https://www.instagram.com/the_loom_collection/"},
    {n:"Spencer Interiors & Contracting",src:"user",added:"2026-07-07",loc:"본사·쇼룸: Icon Tower 9–10F(Unit 901), Barsha Heights(TECOM), Dubai · 지역오피스: Mussafah, Abu Dhabi · 창고: 86 St, Dubai",tier:"premium",grade:["mid-tier","high-end villa","hotel-commercial"],also:["kitchen","fitout-comm"],tags:["턴키","조이너리"],
     maps:[{l:"본사 · Icon Tower(Barsha Heights)",q:"Spencer Interiors Contracting Icon Tower Barsha Heights Dubai"},{l:"아부다비 오피스 · Mussafah",q:"Spencer Interiors Contracting Mussafah Abu Dhabi"}],
     brands:"턴키 오피스·상업 인테리어 — 디자인+피트아웃+가구·조이너리 공급 (오피스·뱅킹·리테일·헬스케어·주거·호스피탈리티). 2005~, 900+ 프로젝트·400만 sqft+, 클라이언트 Kitopi·Veolia·Cisco·Servier·AG&P 등",pro:"★사용자 추가·웹검증. UAE 톱10급 오피스 턴키 피트아웃 컨트랙터 — 디자인·시공·가구 원스톱. British Chamber Dubai 회원, 두바이 본사+쇼룸·AD 오피스, ☎ +971 4 451 7700 · info@spenceri.com",con:"자재 공급사가 아니라 시공(피트아웃) 컨트랙터 — 개별 자재 조달과 성격 다름(견적은 턴키/프로젝트 단위). 오피스·상업 중심(럭셔리 빌라 FF&E는 별도)",web:"spenceri.com"},
+  ]},
+
+ {id:"rug", title:"Rugs / Carpets", ko:"러그 / 카펫",
+  note:"2026-07-10 신설. 럭셔리 메인 러그(핸드노트)와 물량 구간(머신메이드)을 나눠서 소싱. 맞춤 제작 본선: Tai Ping(풀커스텀)·Iwan Maktabi(디자이너 하이엔드)·Jaipur(가성비 핸드노트) 견적 비교 추천. 견적 시: 핸드노트 vs 핸드터프트 vs 머신, 소재(울·실크·뱀부실크), 밀도(knot count), 커스텀 리드타임 확인. The Rug Company·Loom Collection은 가구 카테고리 소속 겹침 표시.",
+  items:[
+   {n:"Iwan Maktabi",added:"2026-07-10",loc:"플래그십 Jumeirah Beach Rd, Umm Suqeim 1 (3층) · Lab: WH 32, Alserkal Ave, Al Quoz, Dubai",tier:"luxury",grade:["high-end villa","hotel-commercial"],supply:"trader",
+    brands:"앤티크 카펫 + 컨템포러리 디자이너 컬렉션(Jan Kath·David/Nicolas 협업) — 핸드메이드 실크·울",pro:"레바논 3대째 카펫 명가 — 중동 럭셔리 신뢰도 최상급, 디자이너 협업·커스텀. 플래그십 ☎ +971 4 434 0199 · Lab +971 4 591 6385",con:"가격 최상위, 하이엔드 핸드노트 리드타임 수개월",web:"iwanmaktabi.com"},
+   {n:"Tai Ping Carpets Middle East",added:"2026-07-10",loc:"Tower AA1, 38F, Mazaya Business Ave, JLT, Dubai (B2B 프로젝트 오피스)",tier:"luxury",grade:["high-end villa","hotel-commercial"],supply:"maker",
+    brands:"100% 맞춤 핸드터프트·핸드노트 — 5성 호텔·프라이빗 레지던스·요트 전문 글로벌 제조사",pro:"호텔/빌라 스펙 대응력 세계 최고 수준 — 디자인·소재·밀도 완전 커스텀. dubai@houseoftaiping.com",con:"리테일 쇼룸 아님(워크인 불가) — 프로젝트 단위 견적만, 전화 미공개(이메일 접촉)",web:"taipingcarpets.com"},
+   {n:"Jaipur Rugs",added:"2026-07-10",loc:"Unit A02, Alserkal Ave, Al Quoz 1, Dubai",tier:"premium",grade:["high-end villa","mid-tier","hotel-commercial"],supply:"maker",
+    brands:"인도 핸드노트(울·뱀부실크) 모던~트래디셔널 — 사이즈·컬러 커스텀",pro:"자체 인도 생산망(장인 4만명) 직영 = 핸드노트 대비 가격 경쟁력. ☎ +971 4 398 8780",con:"페르시안 앤티크류 없음, 커스텀은 인도 제작 — 배송 리드타임 확인",web:"jaipurrugs.com"},
+   {n:"Zuleya by FBMI",added:"2026-07-10",loc:"Showroom 1, Bldg 2, Dubai Design District(d3), Dubai",tier:"premium",grade:["high-end villa","hotel-commercial"],
+    brands:"아프간 여성 장인 핸드노트 울 카펫 — 지속가능·소셜임팩트, 디자이너 협업 비스포크(Pallavi Dean 등)",pro:"ESG 스토리텔링 강점 — 럭셔리 빌라에 내러티브 부여, 비스포크 실적. ☎ +971 4 243 2327",con:"컬렉션 규모 작고 스타일 폭 좁음(아프간 전통 기반)",web:"fbmi.ae"},
+   {n:"The Red Carpet UAE",added:"2026-07-10",loc:"메인 Umm Suqeim Rd, Al Quoz · Mall of the Emirates L1, Dubai",tier:"mid",grade:["mid-tier","high-end villa"],also:["curtain"],
+    brands:"핸드+머신메이드 풀레인지(울·실크·비스코스) — UAE 현지 제조 커스텀('Designed by You'), 커튼·패브릭 원스톱 (1997~)",pro:"UAE 내 자체 제작 = 커스텀 리드타임 짧음(견적 60분). 메인 ☎ +971 4 379 4740 · MoE +971 4 340 9924",con:"볼륨형 — 하이엔드 핸드노트 품질은 상위 업체 대비 검수 필요",web:"theredcarpets.com"},
+   {n:"Persian Carpet House & Antiques",added:"2026-07-10",loc:"Dubai Mall · Mirdif 매장, Dubai (본사·창고 Sharjah Ind.4)",tier:"mid",grade:["mid-tier","high-end villa"],supply:"trader",
+    brands:"정통 페르시안·아프간·오리엔탈 핸드메이드·앤티크 + 수선·클리닝 (1979~)",pro:"UAE 최대 정통 핸드메이드 리테일·홀세일 — 페르시안 진품 소싱 기준점. ☎ +971 50 112 3373",con:"기성 진품 딜러 성격(모던 커스텀 약함), 정찰제 아님 — 가격 협상 필수",web:"instagram.com/persiancarpethouse"},
+   {n:"Carpet Centre",added:"2026-07-10",loc:"Umm Suqeim St, Al Barsha 2 (플래그십) · Mall of the Emirates, Dubai",tier:"budget",grade:["apartment","mid-tier"],
+    brands:"터키산 머신메이드 + 인도산 핸드메이드, 커스텀 제작 — 무료 홈트라이얼(4장까지)",pro:"홈트라이얼로 빌라 현장 실물 매칭 후 구매 — 중급 물량 소싱에 실용적. ☎ +971 54 701 7925",con:"중급 볼륨 포지션 — 럭셔리 메인 러그보단 세컨더리 공간용",web:"carpetcentre.com"},
+  ]},
+
+ {id:"wallpaper", title:"Wallpaper / Wallcovering", ko:"도배지 / 벽지 / 월커버링",
+  note:"2026-07-10 신설. 하이엔드(Phillip Jeffries=Maison&Deco 공식) vs 재고 스톡키스트(Decor Est.) vs 물량 도매(NGC)로 층위 구분. ⚠️Élitis·Arte(벨기에)는 UAE 공식 유통 미확인 — 본사 리테일러 조회 필요. EMIL Interiors(가구 카테고리)가 Holly Hunt 텍스타일·월커버링 에이전트로 겹침. 견적 시: 정품 딜러 여부 서면 확인, 방염 등급(호텔), 시공 포함 여부, 롤 배치(batch) 번호 통일 확인.",
+  items:[
+   {n:"Maison & Deco",added:"2026-07-10",loc:"Office 1410, Bldg X2, Cluster X, JLT, Dubai",tier:"luxury",grade:["high-end villa","hotel-commercial"],supply:"trader",
+    brands:"Phillip Jeffries GCC 공식 유통사(UAE·사우디·카타르 등 커버) — 프랑스계 하이엔드 월커버링 중심",pro:"PJ 본사 공식 지정 쇼룸(본사 디렉터리 등재 확인) = 정품·프로젝트 스펙 대응 확실. ☎ +971 4 553 8950",con:"트레이드 오피스형 쇼룸 — 방문 예약 필수. 자사 웹 접속 불안정 — 전화 접촉 권장",web:"phillipjeffries.com/showrooms/221"},
+   {n:"Meco Shades",added:"2026-07-10",loc:"KML Bldg, Al Quoz 1, Dubai",tier:"premium",grade:["high-end villa","hotel-commercial"],also:["curtain"],
+    brands:"Arte·Sanderson·York·Roberto Cavalli·Nina Campbell·Phillip Jeffries 등 디자이너 벽지 (커튼·블라인드·바닥재 겸업)",pro:"럭셔리 브랜드 라인업 최광폭 + 창호·패브릭 원스톱. ☎ +971 4 22 33 832",con:"⚠️Arte 본사 공식 쇼룸 리스트엔 UAE 없음 — 브랜드별 정식 딜러 여부 발주 전 서면 확인",web:"mecoshades.com"},
+   {n:"Decor Establishment (1974)",added:"2026-07-10",loc:"Salahuddin Rd, Hor Al Anz, Deira, Dubai (+ Sharjah 지점)",tier:"mid",grade:["mid-tier","high-end villa"],supply:"trader",
+    brands:"Casadeco·Erismann·Grandeco·Ideco·Mohr 등 유럽 수입지 — UAE 최대급 재고 스톡키스트",pro:"1974~ 최고참 — 재고 많아 납기 빠름(수입 대기 불필요). ☎ +971 4 255 6252 · WA +971 52 987 3838",con:"초하이엔드(Élitis급)보단 유럽 중상급 위주, 쇼룸이 올드 두바이",web:"decorwallcovering.com"},
+   {n:"SkiptonWall",added:"2026-07-10",loc:"Jumeirah Beach Rd, Jumeirah 3, Dubai (+ AD 지점)",tier:"premium",grade:["high-end villa","mid-tier"],also:["curtain"],
+    brands:"영국·이탈리아·독일·일본·프랑스산 벽지 컬렉션 (커튼·블라인드 겸업, 영국계 업력 ~50년)",pro:"주메이라 빌라권 주거 럭셔리 실적 다수 — 디자이너·시공 협업 익숙. ☎ +971 50 865 9673",con:"특정 하이엔드 브랜드 독점권보단 자체 큐레이션 중심",web:"skiptonwall.com"},
+   {n:"NGC Nafees Wallpaper",added:"2026-07-10",loc:"229 Salah Al Din Rd, Deira 본사 · Dragon Mart 2 아울렛, Dubai",tier:"budget",grade:["apartment","mid-tier","hotel-commercial"],supply:"trader",
+    brands:"상업·주거용 벽지 대량 유통 — 중동 최대급 벽지 도매상, 자체 브랜드 컬렉션 다수",pro:"도매가 기반 — 대면적 물량(아파트 단지·호텔 표준층) 단가 최강. ☎ +971 4 269 7175",con:"럭셔리 디자이너 브랜드 아님 — 스위트·로비용 아닌 물량 구간용",web:"ngcmiddleeast.com"},
+   {n:"WallpaperLand",added:"2026-07-10",loc:"Shop 74, Al Ameed Plaza, Al Quoz 4, Dubai",tier:"budget",grade:["apartment","mid-tier"],
+    brands:"비닐·3D·그래스클로스·커스텀 뮤럴 등 1,000+ 디자인 — 무료 시공·샘플",pro:"시공 포함 턴키가 저렴·빠름 — 스태프 구역·BOH용. ☎ +971 50 213 6026",con:"브랜드 정품 라인 없음, 품질 편차 — 고급 구역 부적합",web:"wallpaperland.ae"},
   ]},
 
  {id:"curtain", title:"Curtains / Drapery / Blinds", ko:"커튼 / 드레이퍼리 / 블라인드",
@@ -1131,6 +1208,14 @@ const DATA = [
     brands:"도매 커튼·블라인드 — 호텔·오피스·병원·학교·리테일 대량 공급/설치",pro:"벌크/도매 가격, 대량 물량 강함, 다용도 상업",con:"도매/가성비 포지션 — 럭셔리 원단·디자인은 별도",web:"emiratiblindscurtain.com"},
    {n:"Al Fidda Curtains & Carpets",src:"user",added:"2026-07-07",loc:"14B St, Belhasa Bldg 지상층, Al Karama (Bur Dubai), Dubai (2011~)",tier:"mid",grade:["apartment","mid-tier"],
     brands:"소프트퍼니싱 종합 — 커튼·카펫·업홀스터리·블라인드·벽지·플라이스크린 + 인테리어",pro:"★Palm 4601 견적 업체. 커튼·카펫·업홀스터리 원스톱, 저비용 로컬(Karama)",con:"Karama 소규모 — 럭셔리 톤 미스매치 가능. 전화번호 사이트 별도 확인 필요",web:"alfiddacurtains.com"},
+   {n:"Sedar Emirates (Sedar Global)",added:"2026-07-10",loc:"Festival Plaza Mall(SZR, Jebel Ali) 외 UAE 다수 쇼룸",tier:"premium",grade:["mid-tier","high-end villa","hotel-commercial"],also:["wallpaper"],
+    brands:"맞춤 커튼·드레이프·블라인드·어닝·벽지(Armani Casa·Versace Home·Missoni Home 컬렉션) — Somfy TaHoma 연동(공식 익스퍼트)",pro:"1892년 창업 헤리티지, 역내 최대 윈도 커버링 체인 — 럭셔리 레퍼런스·AS 체계 가장 안정. ☎ +971 4 338 8663",con:"리테일 체인 프리미엄 가격 — 트레이드 단가 협상 여지 제한적, 성수기 리드타임 확인",web:"sedarglobal.com"},
+   {n:"Sunway Curtains",added:"2026-07-10",loc:"6th St, Al Quoz, Dubai",tier:"mid",grade:["mid-tier","high-end villa"],
+    brands:"모터라이즈드/수동 커튼·롤러·블랙아웃·드레이퍼리 + 어닝·방충망·업홀스터리 — Somfy 공식 익스퍼트(TaHoma)",pro:"Somfy 직접 인증 채널 = 모터 정품·보증(최대 5년) 확실, Al Quoz 기반 실측 빠름. ☎ +971 4 340 8707",con:"Sedar 대비 인지도·쇼룸 규모 열세 — 대형 프로젝트는 시공 인력 규모 확인",web:"somfy.me (익스퍼트 디렉토리 등재)"},
+   {n:"Evershine Furniture Factory",added:"2026-07-10",loc:"WH#5, 22nd St, Al Quoz Industrial 3, Dubai",tier:"mid",grade:["mid-tier","hotel-commercial"],supply:"maker",
+    brands:"메이드투메저 커튼·모터라이즈드 블라인드(Somfy 모터)·로만/롤러 셰이드 + 소파 재업홀스터리 자체 공장",pro:"자체 봉제 공장 = 커스텀 드레이퍼리 단가·수정 대응 유리(호텔·빌라 물량 제작). ☎ +971 4 338 0491",con:"공장형 — 패브릭 큐레이션·스타일링 제안 약함(디자이너가 사양 리드 필요)",web:"evershinefurniture.com"},
+   {n:"Luxury Antonovich Home (커튼·드레이퍼리)",added:"2026-07-10",loc:"KA Furniture Showroom, Al Wasl Rd, Al Badaa, Jumeirah, Dubai",tier:"luxury",grade:["high-end villa"],
+    brands:"하이엔드 빌라·팰리스 비스포크 커튼·드레이퍼리 (Antonovich Group 산하 — 시공 카테고리의 Antonovich와 동일 그룹)",pro:"팰리스급 클래식·모던 드레이퍼리 디자인+제작+시공 원스톱 — 최상급 마스터룸·리셉션. ☎ +971 58 881 2020",con:"풀 핏아웃 지향 디자인 하우스 — 커튼 단품 발주 시 가격 프리미엄 큼(견적 비교군으로 활용)",web:"antonovich-design.ae"},
   ]},
 
  {id:"waterproof", title:"Waterproofing", ko:"방수재",
@@ -1140,14 +1225,12 @@ const DATA = [
     brands:"액체·시트 멤브레인·크리스탈린(WT-200)·실란트·시멘트질 방수 (글로벌 1위급)",pro:"풀 시스템 라인업·글로벌 신뢰도, 로컬 재고, 기술 지원 강함",con:"프리미엄 가격, 시스템별 시방 준수 필요",web:"gcc.sika.com"},
    {n:"MAPEI UAE",loc:"UAE (로컬 제조)",tier:"premium",grade:["mid-tier","high-end villa","hotel-commercial"],
     brands:"Mapelastic 시멘트질 방수·자착식 멤브레인(Bitustick)·비튜멘 시트·타일 방수",pro:"욕실/발코니 시멘트질 방수 강함, 타일 접착+방수 시스템 통합",con:"프리미엄, 라인 다양 — 부위별 정확한 제품 선택 필요",web:"mapei.com/ae"},
-   {n:"Fosroc (공인딜러)",loc:"딜러 경유 (예: Fort Specialties, Abu Dhabi)",tier:"premium",grade:["mid-tier","hotel-commercial"],flag:true,
-    brands:"Nitoproof·크리스탈린·구조 방수/건설화학",pro:"건설화학 강한 혈통, 구조/지하 방수 레퍼런스",con:"🚩 딜러 경유 — 정확한 UAE 공인딜러·재고 확인",web:"fosroc.com"},
-   {n:"Master Builders Solutions (구 BASF)",loc:"딜러 경유: QCON General Trading(Al Quoz 4) · Mohan & Sons(Al Quoz 3) · Reva International(Business Bay), Dubai",tier:"premium",grade:["mid-tier","hotel-commercial"],flag:true,
-    brands:"MasterSeal 멤브레인·MasterLife 크리스탈린·시멘트질 방수",pro:"글로벌 건설화학, 크리스탈린/구조 방수 강함. ✅재확인(2026-07) 정식 딜러: QCON ☎ 056-4090966 · Mohan & Sons ☎ 04-3380345",con:"🚩 딜러 경유(BASF→Master Builders 분리). ※이전 표기 'Modern Seal Insulation'은 MBS 공인딜러 근거 없어 삭제",web:"master-builders-solutions.com"},
+   {n:"Fosroc (Al-Gurg Fosroc)",loc:"Al-Gurg Fosroc 법인: 54, 13th St, Umm Ramool, Dubai · 딜러 Fort Specialties(AD)",tier:"premium",grade:["mid-tier","hotel-commercial"],
+    brands:"Nitoproof·크리스탈린·구조 방수/건설화학 (2021 Saint-Gobain 인수)",pro:"건설화학 강한 혈통, 구조/지하 방수 레퍼런스. UAE 공식 법인 Al-Gurg Fosroc(50년 운영) + 두바이 오피스 ☎ +971 4 331 6240",con:"프리미엄 가격, 시스템별 시방 준수 필요",web:"fosroc.com"},
+   {n:"Master Builders Solutions (구 BASF)",loc:"공인유통 QCON General Trading — Al Quoz Ind.4, Dubai (+ UAE 5개 지점)",tier:"premium",grade:["mid-tier","hotel-commercial"],
+    brands:"MasterSeal 멤브레인·MasterLife 크리스탈린·시멘트질 방수 (현재 Sika 소유)",pro:"글로벌 건설화학, 크리스탈린/구조 방수 강함. UAE 최대 공인유통 QCON(6년 연속) ☎ +971 4 334 8881 · info@qconworld.com",con:"딜러 경유(BASF→Master Builders→Sika). 정품·재고는 QCON 통해 확인",web:"master-builders-solutions.com"},
    {n:"Terraco",loc:"UAE (로컬 생산)",tier:"mid",grade:["apartment","mid-tier"],
     brands:"장식 코팅 + 방수/보호 코팅 (Terracoat 등)",pro:"로컬 생산 가성비, 코팅+방수 함께",con:"전문 구조 방수보단 코팅/마감 지향 — 부위 확인",web:"terraco.com"},
-   {n:"DCP (Don Construction Products)",loc:"영국 본사(Haverhill) · 중동 오피스 카타르·사우디·요르단 — UAE 거점 미확인",tier:"mid",grade:["apartment","mid-tier","hotel-commercial"],flag:true,
-    brands:"영국계 건설화학(1927~, 방수가 창업 뿌리) — 시멘트계 Setseal·결정형 Setseal R·역청시트 Bitumax·액상 도포 + 혼화제·보수재·타일접착",pro:"넓은 방수/건설화학 레인지, Fosroc과 유사한 중가 실용 포지션(35개국 유통)",con:"🚩 조사(2026-07): 실제 중동 거점은 카타르·사우디·요르단이며 UAE 자체 오피스·지정 대리점은 독립 확인 안 됨. 조달 시 UAE 딜러 유무를 본사에 직접 확인 필요",web:"dcp-int.com"},
    {n:"방수 트레이드 픽업 (Al Quoz·Ras Al Khor)",loc:"Al Quoz / Ras Al Khor Industrial, Dubai",tier:"budget",grade:["apartment","mid-tier"],
     brands:"비튜멘 롤/토치온 시트·프라이머·시멘트질 방수 (일반 트레이드 픽업)",pro:"실무 자재 접근·가격, 소량~중량 픽업",con:"🚩 브랜드/등급 편차 — 옥상 등 중요부위는 브랜드 시스템 권장",web:"검색: waterproofing Al Quoz Dubai"},
   ]},
@@ -1165,6 +1248,14 @@ const DATA = [
     brands:"영국 Havwoods 엔지니어드 우드·헤링본·아웃도어 데크 (건축가 스펙 다수)",pro:"디자이너/건축가 선호 브랜드, 넓은 우드 셀렉션, 상업 레퍼런스",con:"프리미엄, 수입 브랜드 리드타임",web:"havwoods.com"},
    {n:"Lobo & Listone",src:"user",added:"2026-07-07",loc:"955 Al Wasl Rd, Al Manara, Umm Suqeim 2, Jumeirah, Dubai",tier:"luxury",grade:["high-end villa","hotel-commercial"],also:["furniture"],
     brands:"프리미엄 오크 파켓·원목마루 공급+시공 — 이탈리아 Listone Giordano UAE 채널, 20+ 국제 브랜드",pro:"★Murooj 572 원목마루(Listone Giordano) 지정 채널. 두바이 자체 쇼룸+전문 시공팀",con:"고급 세그먼트 한정 — 저가 라미네이트 물량은 별도",web:"lobolistone.com"},
+   {n:"Casamia Building Material",added:"2026-07-10",loc:"7 2A St, Al Quoz 1 (SZR 인접), Dubai — 54,000sqft 쇼룸",tier:"luxury",grade:["high-end villa","hotel-commercial"],also:["tile"],
+    brands:"오스트리아 mafi 내추럴 우드 플로어 공식 채널 + 우드 파켓 — Gessi·Laminam·Turri 등 이탈리아 럭셔리 병행",pro:"유럽 프리미엄 원목(무독성·내추럴 오일 마감)을 초대형 쇼룸서 실물 확인. ☎ +971 4 258 7777",con:"타일·주방·가구가 주력인 종합 럭셔리 쇼룸 — 우드 시공팀 역량·리드타임 별도 확인",web:"casamiauae.com"},
+   {n:"GreenWood General Trading",added:"2026-07-10",loc:"Office 804, The Onyx Tower 2, Dubai (플로어 스튜디오)",tier:"mid",grade:["mid-tier","high-end villa"],
+    brands:"엔지니어드 우드·파켓·SPC/LVT·라미네이트 — 유럽 브랜드(Barlinek·Coswick·Kronotex·Classen) 공급+자체 시공팀 (2006~)",pro:"약 20년 로컬 경력 유럽 브랜드 전문 공급+시공 일원화 — 럭셔리·실용 사이 가성비. ☎ +971 4 330 3304",con:"오피스/스튜디오형(대형 쇼룸 아님), 평일만 영업",web:"greenwood.ae"},
+   {n:"Al Shamsi Trading",added:"2026-07-10",loc:"Salahuddin Rd, Deira, Dubai (업력 50년+)",tier:"mid",grade:["apartment","mid-tier"],also:["tile","sanitary"],
+    brands:"우든 플로어링·비닐(LVT) + 타일·위생도기 종합 자재상",pro:"두바이 최장수급 자재 트레이더 — 물량·납기 안정성. ☎ +971 4 266 6429",con:"주력은 욕실·타일 — 원목마루 큐레이션 폭 좁음, 디자인 컨설팅 기대 낮출 것",web:"alshamsitrading.com"},
+   {n:"Floor Land",added:"2026-07-10",loc:"Shop 74, Al Ameed Plaza, Al Quoz 4 + 창고 Al Quoz Ind.3, Dubai",tier:"budget",grade:["apartment","mid-tier"],
+    brands:"SPC·LVT·라미네이트·파켓·헤링본 공급+시공 — 500+ 디자인 재고",pro:"Al Quoz 재고 기반 즉납·당일 견적 — 서비스 공간 등 물량 구간에 유리. ☎ +971 50 293 3585",con:"⚠️동일 운영자가 'Floorway' 등 SEO 도메인 다수 운영 — 견적·보증은 법인명(Floor Land LLC) 기준 서면 고정",web:"floorland.ae"},
   ]},
 
  {id:"audio", title:"Audio / AV", ko:"오디오 / 음향 (AV)",
@@ -1174,8 +1265,14 @@ const DATA = [
     brands:"덴마크 프리미엄 TV·스피커·사운드시스템·헤드폰 (브랜드 직영/공식 파트너)",pro:"★Palm 4601 견적 지정. 공식 스토어 두바이·아부다비 복수 거점, ☎ +971 4 339 9314(Dubai Mall)",con:"프리미엄 가격 — 단일 브랜드",web:"bang-olufsen.com"},
    {n:"Dr Head",src:"user",added:"2026-07-07",loc:"Business Central Towers B, Shop 3, Al Sufouh (Al Barsha 1), Dubai",tier:"luxury",grade:["high-end villa","hotel-commercial"],
     brands:"프리미엄 오디오 부티크 — Focal·Naim 정식 채널('Focal Powered by Naim' 병설), 헤드폰·스피커·앰프·올인원",pro:"★Palm 4601 견적 지정(Naim Mu-So 등). Focal 지역 정식 스토어, ☎ +971 54 518 8661",con:"부티크 럭셔리 — 견적서 'Hekla' 브랜드는 미확인(재확인 필요)",web:"drhead.ae"},
-   {n:"Prime Audio",src:"user",added:"2026-07-07",loc:"Business Central Towers, Shop 3, Media City (Al Sufouh 2), Dubai",tier:"premium",grade:["mid-tier","high-end villa"],supply:"trader",flag:true,
-    brands:"하이엔드/Hi-Fi 오디오·헤드폰·Pro audio 유통사 (15년, GCC 딜러망)",pro:"★Murooj 572 견적 업체(Focal 스피커). 두바이 실주소·전화, ☎ +971 4 280 8581",con:"🚩 자사 사이트에서 Focal 취급 목록 미확인 — 견적/직접문의로 재확인",web:"primeaudio.ae"},
+   {n:"Prime Audio (Prime Audio Trading LLC)",src:"user",added:"2026-07-07",loc:"Business Central Towers B, Shop 3, Media City, Dubai",tier:"premium",grade:["mid-tier","high-end villa"],supply:"trader",
+    brands:"하이엔드/Hi-Fi 오디오·헤드폰·Pro audio 유통사 (15년, GCC 딜러망) — 소매 브랜드 Dr Head 운영",pro:"★Murooj 572 견적 업체(Focal 스피커). Dr Head(같은 회사)가 Focal Powered by Naim 정식 취급, ☎ +971 4 280 8581",con:"위 Dr Head와 동일 회사(유통 모법인=Prime Audio, 소매=Dr Head) — 같은 주소·전화 공유",web:"primeaudio.ae"},
+   {n:"Dubai Audio",added:"2026-07-10",loc:"Emgate Bldg, SZR (Business Bay 메트로 옆) · Al Wasl 쇼룸, Dubai",tier:"luxury",grade:["high-end villa","hotel-commercial"],supply:"trader",
+    brands:"McIntosh·Wilson Audio·Linn·Naim·Focal·Chord·Klipsch·Harbeth·Audeze + 홈시어터·아웃도어·커스텀 인스톨 부문",pro:"UAE 최상급 하이파이 포트폴리오 + 시청실 완비 — 럭셔리 빌라 스펙 결정 기준점. ☎ +971 4 343 1441",con:"가격 최상위권 — Sonos급 미드레인지 멀티룸은 주력 아님",web:"dubaiaudio.com"},
+   {n:"Archimedia Middle East",added:"2026-07-10",loc:"Bu Ameem Bldg, Umm Hurair Rd, Al Karama, Dubai (HQ + 카이로·리야드 지사)",tier:"luxury",grade:["high-end villa","hotel-commercial"],also:["smart"],
+    brands:"하이퍼포먼스 오디오·홈시네마 전용룸·홈오토메이션·조명제어·요트 AV — 설계~시공 풀서비스 (직원 51~200명)",pro:"지역 최대급 럭셔리 AV 인테그레이터 — 대형 빌라·요트 실적, 건축가·디자이너 협업 프로세스. ☎ +971 4 337 0181",con:"⚠️두바이 쇼룸 이전 진행 중 — 방문 전 전화 확인. 소규모 단일룸엔 과함",web:"archimedia-me.com"},
+   {n:"Expert Audio Trading",added:"2026-07-10",loc:"Triple 777 Center, Al Wasl Rd, Jumeirah 3, Dubai (신·구 주소 혼재 — 방문 전 확인)",tier:"premium",grade:["mid-tier","high-end villa"],supply:"trader",
+    brands:"B&W·McIntosh·Wilson Audio·Devialet·KEF·Klipsch·Monitor Audio·Sonos·Elipson — 판매+빌라 설치 (20년+)",pro:"Sonos 멀티룸~하이엔드까지 폭넓은 브랜드 + 출장 설치·재구성 서비스 리뷰 양호. ☎ +971 50 837 3469",con:"대형 인테그레이터 대비 설계 조직 작음",web:"expertaudio.ae"},
   ]},
 
  {id:"switches", title:"Switches / Locks / Safes", ko:"스위치 · 도어록 · 금고",
@@ -1188,10 +1285,10 @@ const DATA = [
     brands:"독일 JUNG 스위치·소켓·KNX (근·중동 담당 공식 유통)",pro:"★Palm 4601 Client selected(JUNG). UAE 공식 유통사 거점 명확, ☎ +971 4 368 7275",con:"프리미엄 독일 브랜드 — 유통 경유. KNX 연동은 스마트홈 인테그레이터와 조율",web:"jung-group.com/en-AE"},
    {n:"Corston",src:"user",added:"2026-07-07",loc:"M-17 Kia Flagship Bldg, Al Quoz, Dubai (2025 직진출)",tier:"premium",grade:["high-end villa","hotel-commercial"],
     brands:"영국 프리미엄 스위치·소켓·하드웨어·조명 (자체 브랜드, Bronze 컬렉션 등)",pro:"★Palm 4601 Client selected(Corston). UAE 직진출·Al Quoz 쇼룸, UAE 전담 영업팀",con:"진출 초기(2025) — 실적·재고 이력 짧음",web:"corston.ae"},
-   {n:"ELMARK (견적서 'ELMART' 오기)",src:"user",added:"2026-07-07",loc:"UAE (온라인 스토어, 물리 거점 미확인)",tier:"mid",grade:["mid-tier","high-end villa"],flag:true,
-    brands:"스마트 도어록 EL-T1 (지문·비번·카드·열쇠·앱 5방식, ST-5050 모티스) — 불가리아계 ELMARK Holding",pro:"★Palm 4601 Client selected(EL-T1). UAE 전용 스토어(uae.elmarkstore.eu)서 EL-T1 판매, 지원 ☎ +971 4 591 8085",con:"🚩 UAE 법인명·물리 주소 미노출 — 순수 온라인/유통 창구 가능성",web:"uae.elmarkstore.eu"},
-   {n:"LuCell (대리점: Continental / Buddy UAE)",src:"user",added:"2026-07-07",loc:"판매: Buddy UAE, Aspin Commercial Tower, Sheikh Zayed Rd, Dubai (걸프 독점: Continental Office Equipment)",tier:"premium",grade:["high-end villa","hotel-commercial"],supply:"trader",flag:true,
-    brands:"한국 제조 프리미엄 금고 — 지문(10개)·디지털·내화(내부 150℃ 이하)",pro:"★Palm 4601 Client selected(금고 SL-SV). 걸프 독점 대리점(Continental)·두바이 판매점 확인",con:"🚩 견적 'SL-SV' 정확 모델은 미확인(LU-3000·SL-SS 계열만 확인) — 모델 스펙 재확인",web:"continental-grp.com"},
+   {n:"ELMARK (ELMARK Trading LLC · 견적서 'ELMART' 오기)",src:"user",added:"2026-07-07",loc:"Al Fajer Complex, Oud Metha, Dubai + Ittihad Rd 쇼룸·창고(600m²+)",tier:"mid",grade:["mid-tier","high-end villa"],
+    brands:"스마트 도어록 EL-T1 (지문·비번·카드·열쇠·앱 5방식, ST-5050 모티스) — 불가리아계 ELMARK Holding",pro:"★Palm 4601 Client selected(EL-T1). UAE 법인+600m² 쇼룸·창고 실재(순수 온라인 아님). 지원 ☎ +971 4 591 8085 · 오피스 050-849-7762",con:"프리미엄 유럽 브랜드 — 12,000종 취급 중 도어록은 일부",web:"uae.elmarkstore.eu"},
+   {n:"LuCell (대리점: Continental / Buddy UAE)",src:"user",added:"2026-07-07",loc:"판매: Buddy UAE, Aspin Commercial Tower, Sheikh Zayed Rd, Dubai (걸프 독점: Continental Office Equipment)",tier:"premium",grade:["high-end villa","hotel-commercial"],supply:"trader",
+    brands:"한국 제조 프리미엄 금고(Sun Safes, 40년+) — 지문(10개)·디지털·내화(내부 150℃ 이하)",pro:"★Palm 4601 Client selected. Buddy UAE 판매·Continental(COES) 걸프 독점 유통 확인. Buddy UAE ☎ +971 54 771 7887",con:"견적 'SL-SV'는 'SL-SS'(예: SL-SS 3000HG W) 오기로 추정 — 발주 전 정확 모델코드 재확인",web:"continental-grp.com"},
   ]},
 
  {id:"design-comm", title:"Design (Office / Commercial / Hospitality)", ko:"오피스·상업 설계", group:"design",
@@ -1223,15 +1320,15 @@ const DATA = [
    {n:"VSHD Design (Rania Hamed)",added:"2026-07-07",loc:"HDS Tower 1608, JLT, Dubai",tier:"premium",grade:["apartment","high-end villa","hotel-commercial"],also:["design-comm"],
     brands:"2007~ 미니멀·디테일 중심 부티크 (residential·commercial)",pro:"강한 미니멀 아이덴티티, 부티크 밀착 서비스. ☎ +971 4 454 2580",con:"소규모 부티크 — 대형 동시수행 캐파 제한",web:"vshd.net",ig:"https://www.instagram.com/vshddesign/"},
    {n:"Sneha Divias Atelier",added:"2026-07-07",loc:"Dubai (P.O.Box 33538) + Porto",tier:"premium",grade:["high-end villa","hotel-commercial","apartment"],flag:true,also:["design-comm"],
-    brands:"부티크 인테리어 아키텍처 — commercial·hospitality·residential, 가구·스타일링까지",pro:"감각적 부티크 디자인, 스타일링 통합. ☎ +971 4 352 0319",con:"🚩 자사 사이트에 상세 주소 미게시(PO Box만), 소규모 스튜디오",web:"snehadivias.com",ig:"https://www.instagram.com/snehadiviasatelier/"},
-   {n:"Anarchitect (Jonathan Ashmore)",added:"2026-07-07",loc:"Al Quoz, Dubai (+ London)",tier:"luxury",grade:["high-end villa","hotel-commercial"],flag:true,also:["design-comm"],
-    brands:"RIBA 건축가(2013) — 건축+인테리어, 절제된 럭셔리·재료/디테일 (Harding Boutique Hotel)",pro:"건축·인테리어 통합, 국제 비평 인정·컨텍스추얼 철학",con:"🚩 자사 사이트에 두바이 오피스 상세주소 미게시(미디어 소스 의존), 소규모",web:"anarchitect.com",ig:"https://www.instagram.com/anarchitect/"},
+    brands:"부티크 인테리어 아키텍처 — commercial·hospitality·residential, 가구·스타일링까지",pro:"감각적 부티크 디자인, 스타일링 통합. 두바이 실재 확인(World-Architects·Architonic 등재). ☎ +971 4 352 0319 · +971 56 116 9004",con:"🚩 실재 확인됨. 단 상세 오피스 주소는 비공개(PO Box만) — 부티크 관행, 방문 전 위치 문의",web:"snehadivias.com",ig:"https://www.instagram.com/snehadiviasatelier/"},
+   {n:"Anarchitect (Jonathan Ashmore)",added:"2026-07-07",loc:"Al Shafar Investment Bldg, Office 137, SZR, Al Quoz Ind.1, Dubai (+ London)",tier:"luxury",grade:["high-end villa","hotel-commercial"],also:["design-comm"],
+    brands:"RIBA 건축가(2013) — 건축+인테리어, 절제된 럭셔리·재료/디테일 (Harding Boutique Hotel)",pro:"건축·인테리어 통합, 국제 비평 인정·컨텍스추얼 철학. 두바이 오피스 확인, ☎ +971 4 239 1993",con:"소규모 아틀리에 — 대형 동시수행 캐파 제한",web:"anarchitect.com",ig:"https://www.instagram.com/anarchitect/"},
    {n:"Algedra Interior Design",added:"2026-07-07",loc:"JBC 3, JLT, Dubai",tier:"premium",grade:["apartment","mid-tier","high-end villa"],
     brands:"럭셔리 residential·commercial 인테리어+건축 (클래식~모던)",pro:"주거 전 범위 대응·접근성 좋음. ☎ +971 4 363 9703",con:"상위 부티크 대비 미디어·수상 약함 — 초고급 shortlist 시 검증",web:"algedra.ae",ig:"https://www.instagram.com/algedra/"},
    {n:"Ivan Ogienko",src:"user",added:"2026-07-07",loc:"Dubai (+ Kyiv) — 개인 디자인 스튜디오",tier:"mid",grade:["apartment","high-end villa","hotel-commercial"],also:["design-comm"],
     brands:"턴키 인테리어 디자인+시공(자체 컨트랙팅) — 아파트·빌라 중심 + 상업(살롱·스파·쇼룸·레스토랑). 두바이·키이우·발리 활동",pro:"★사용자 사용 업체. 두바이 실프로젝트(Marina Vista 등)·인스타 레퍼런스 활발",con:"두바이·키이우 이중 거점 개인 스튜디오(전용 두바이 오피스 주소 미공개) — 규모·계약조건 확인",web:"ivanogienko.com/en",ig:"https://www.instagram.com/ivan_ogienko_design/"},
-   {n:"Tellus Studio (조경 디자인)",src:"user",added:"2026-07-07",loc:"Dubai (조경 디자인 스튜디오)",tier:"mid",grade:["high-end villa","hotel-commercial"],tags:["조경"],flag:true,
-    brands:"조경(랜드스케이프) 디자인 스튜디오 — ★Murooj 빌라 조경 디자인 의뢰처(사장님 사용)",pro:"★사용자 실사용. 인스타 레퍼런스(@tellusstudio.design)로 스타일 확인",con:"🚩 인스타 기준 — 정확 웹/법인 확인 권장(동명 미국 Colorado 'tellUs Design'과 구분). 조경 설계라 인테리어 실내와 별개 스코프",ig:"https://www.instagram.com/tellusstudio.design/"},
+   {n:"Tellus Studio (조경 디자인)",src:"user",added:"2026-07-07",loc:"Dubai 추정 (조경 디자인 스튜디오 — 소재 공개 미확인)",tier:"mid",grade:["high-end villa","hotel-commercial"],tags:["조경"],flag:true,
+    brands:"조경(랜드스케이프) 디자인 스튜디오 — ★Murooj 빌라 조경 디자인 의뢰처(사장님 사용)",pro:"★사용자 실사용. 인스타(@tellusstudio.design) 프로필 'Tellus Studio Landscape Design'",con:"🚩 미국 Colorado 'tellUs'(@tellusdesignstudiocos)와는 별개 확정. 단 인스타 외 독립 근거(웹·법인·지도) 없음 — 사장님이 인보이스/DM으로 정식 상호·라이선스·주소 확인 필요",ig:"https://www.instagram.com/tellusstudio.design/"},
   ]},
 
  {id:"fitout-comm", title:"Fit-out (Office / Commercial)", ko:"오피스·상업 시공", group:"construction",
@@ -1266,6 +1363,18 @@ const DATA = [
     brands:"주거 중심 리노베이션·오피스 핏아웃 단일벤더 — 빌라·주방·욕실·스마트홈, 3D 프리뷰",pro:"투명 견적·3D 선(先)프리뷰, 700+ 프로젝트, 예산형 주거 리노에 적합",con:"소규모 — 대형 턴키·하이엔드 호텔 역량은 아님",web:"revivehub.ae"},
    {n:"BOKLY Dubai Renovation",src:"user",added:"2026-07-07",loc:"M-28, Arabilla Bldg, Al Waheda, Dubai",tier:"mid",grade:["apartment","high-end villa","hotel-commercial"],also:["fitout-comm"],tags:["턴키","철거"],
     brands:"인테리어 디자인·리노베이션 (주거+오피스) — 소규모 크래프트맨 팀",pro:"★사용자 이메일 문의처. 두바이 Al Waheda 소재, 주거·오피스 리노베이션",con:"🚩 소규모 — 자체 웹사이트 없음(Facebook 페이지만), 레퍼런스·규모 확인 권장",web:"facebook.com/people/BOKLY-DUBAI-Renovation/61560387713788/"},
+   {n:"Antonovich Group (Luxury Antonovich Design)",added:"2026-07-10",loc:"The Exchange Tower 501, Business Bay · 쇼룸 Al Wasl Rd, Jumeirah, Dubai",tier:"luxury",grade:["high-end villa"],also:["design-resi"],tags:["턴키","Civil","조이너리","밀워크","MEP","조경"],
+    brands:"럭셔리 빌라 설계+시공+피트아웃 턴키 — Palm Jumeirah 오션프론트·Al Barari·Dubai Hills 맨션, 글로벌 500+ 프로젝트",pro:"건축~인테리어~가구 완전 인하우스 원스톱, UHNW(초고액자산가) 대응 경험. ☎ +971 54 299 5555",con:"디자인 주도형 = 단가 최상급, 순수 시공만 맡기기엔 비효율",web:"antonovich-design.ae"},
+   {n:"Rayfitout Architecture & Interiors",added:"2026-07-10",loc:"Al Qusais Industrial 5, Deira, Dubai (자체 생산시설 15,000sqft)",tier:"premium",grade:["high-end villa","mid-tier"],tags:["턴키","철거","Civil","조이너리","밀워크","MEP"],
+    brands:"33년 업력 가족기업 — 하이엔드 빌라 리노베이션(구조변경·증축 포함), Emirates Hills·Al Barari·Palm Jumeirah 커뮤니티 NOC 경험",pro:"설계~자체 조이너리 제작~인허가까지 인하우스. ☎ +971 800 72943",con:"리야드·나이로비 확장 중 — PM 리소스 분산 가능성 확인",web:"rayfitout.com"},
+   {n:"Zen Interiors",added:"2026-07-10",loc:"Essa Lutfi Bldg, Al Barsha 1, Dubai (워크샵 Al Quoz)",tier:"premium",grade:["high-end villa","mid-tier"],tags:["턴키","조이너리","밀워크"],
+    brands:"2003~ 주거 1,600+ 프로젝트 — 디자인+피트아웃+가구 턴키, Palm Jumeirah 빌라 실적, 자체 조이너리 워크샵",pro:"업력 대비 리뷰 평판 안정, 가구·조이너리 통합 강점. ☎ +971 4 340 5050",con:"가구·FF&E 성격 강함 — 대규모 Civil/구조 공사는 별도 확인",web:"zeninteriors.net"},
+   {n:"The Big Fitout",added:"2026-07-10",loc:"Offices Land Bldg Block 2, Al Karama, Bur Dubai",tier:"mid",grade:["mid-tier","high-end villa"],tags:["턴키","철거","Civil","MEP"],
+    brands:"2010~ 빌라 풀 리노베이션 800건+ — Arabian Ranches·JGE·Dubai Hills·Damac Hills (영국인 경영진)",pro:"3D 디자인~디벨로퍼 승인~시공~핸드오버 단일 계약, 중상급 빌라 커뮤니티 물량 최다급. ☎ +971 58 505 0200",con:"최상급(Palm 시그니처·Emirates Hills급) 럭셔리 레퍼런스는 상대적 약함",web:"thebigfitout.com"},
+   {n:"MGM Interiors",added:"2026-07-10",loc:"Al Quoz Industrial 4, Dubai (자체 공장)",tier:"mid",grade:["mid-tier","high-end villa","hotel-commercial"],also:["fitout-comm"],tags:["턴키","Civil","조이너리","밀워크","MEP"],
+    brands:"1998~ Civil·MEP·조이너리·업홀스터리·커스텀 가구 인하우스 — Emirates Hills·Palm Jumeirah 빌라 피트아웃",pro:"Dubai Municipality·Civil Defence 승인 업체 + Al Quoz 자체 공장 = 커스텀 제작 단가 경쟁력. ☎ +971 50 488 7843",con:"상업 피트아웃 비중 큼 — 럭셔리 주거 전담 조직 여부 미팅 확인",web:"mgminteriorsuae.com"},
+   {n:"Fajr Interiors",added:"2026-07-10",loc:"904 Dusseldorf Business Point, Al Barsha 1, Dubai",tier:"mid",grade:["mid-tier","high-end villa"],tags:["턴키","조이너리","MEP","조경"],
+    brands:"주거·상업 턴키 인테리어 — Jumeirah Islands 빌라 리노베이션(풀장·외부공간 포함) 실적",pro:"중급 리노베이션 가성비 + MEP·가구 공급 원스톱. ☎ 800-FAJR(3257)",con:"규모 작음 — 대형(3,000sqft+ 풀 스트립아웃) 동시 수행력 검증 필요",web:"fajrinteriors.com"},
   ]},
 
  {id:"qs", title:"Cost / QS", ko:"적산 · QS · 코스트 컨설팅", group:"qs",
@@ -1275,38 +1384,38 @@ const DATA = [
     brands:"Cost & commercial management·QS·전주기 코스트 컨트롤 — 글로벌 최대급",pro:"글로벌 데이터·벤치마킹 최상위, 대형·복합 실적. ☎ +971 4 430 9101",con:"소규모 인테리어 단독엔 오버스펙·비용 부담",web:"turnerandtownsend.com"},
    {n:"Rider Levett Bucknall (RLB)",added:"2026-07-07",loc:"Marina Plaza, Dubai Marina (ME 본부 Barsha Heights)",tier:"premium",grade:["hotel-commercial","high-end villa","mid-tier"],
     brands:"Cost Management·QS 전문 (PMC·FM 겸업) — 전통 QS 강자",pro:"QS 뿌리 깊은 글로벌 펌, 코스트 데이터·리포트 신뢰도↑. ☎ +971 4 339 7444",con:"프리미엄 요율",web:"rlb.com"},
-   {n:"Currie & Brown",added:"2026-07-07",loc:"Dubai Hills Business Park (+ Abu Dhabi)",tier:"premium",grade:["hotel-commercial","high-end villa","mid-tier"],flag:true,
-    brands:"Cost management·QS·building surveying·PM — 순수 cost/QS 컨설턴시",pro:"중동 오래된 QS 실적, 현지 리더십 확립",con:"🚩 주소가 소스마다 상이 — 방문/발주 전 최신 주소 확인",web:"curriebrown.com"},
+   {n:"Currie & Brown",added:"2026-07-07",loc:"Office 203, Bldg 4, Dubai Hills Business Park, Dubai (+ Silver Wave Tower, AD)",tier:"premium",grade:["hotel-commercial","high-end villa","mid-tier"],
+    brands:"Cost management·QS·building surveying·PM — 순수 cost/QS 컨설턴시",pro:"중동 오래된 QS 실적, 현지 리더십 확립. 두바이 오피스 확인(2GIS), ☎ +971 4 295 5198",con:"프리미엄 요율",web:"curriebrown.com"},
    {n:"Faithful+Gould (AtkinsRéalis)",added:"2026-07-07",loc:"Al Rostamani Bldg, Bur Dubai",tier:"premium",grade:["hotel-commercial","high-end villa","mid-tier"],
     brands:"Cost·commercial management·project controls — AtkinsRéalis 산하 통합 PMC",pro:"엔지니어링(Atkins)+cost(F+G) 통합 원스톱. ☎ +971 4 405 9100",con:"브랜드 통합 과도기(F+G→AtkinsRéalis) 명칭·연락처 혼선 가능",web:"fgould.com"},
-   {n:"AECOM (Cost Management)",added:"2026-07-07",loc:"Dubai",tier:"premium",grade:["hotel-commercial","mid-tier"],flag:true,
-    brands:"Cost management·QS(pre&post-contract)·commercial — 세계 최대급 cost 부문",pro:"방대한 코스트 데이터, 인프라~빌딩 전 분야",con:"🚩 인테리어보다 대형 인프라·건축 중심, Dubai QS 오피스 주소·전화 미공개",web:"aecom.com"},
-   {n:"Gleeds",added:"2026-07-07",loc:"Gold & Diamond Park, SZR / DIFC, Dubai",tier:"premium",grade:["apartment","mid-tier","high-end villa","hotel-commercial"],flag:true,
-    brands:"Cost management·QS·building surveying·strategic advisory — 독립계 글로벌",pro:"독립성(비 대형그룹) + 20년+ UAE 실적, 호스피탈리티/레지덴셜 커버",con:"🚩 오피스 주소 소스간 불일치 — 방문 전 확인",web:"gleeds.com"},
+   {n:"AECOM (Cost Management)",added:"2026-07-07",loc:"Ubora Tower, Level 43, Business Bay, Dubai",tier:"premium",grade:["hotel-commercial","mid-tier"],
+    brands:"Cost management·QS(pre&post-contract)·commercial — 세계 최대급 cost 부문",pro:"방대한 코스트 데이터, 인프라~빌딩 전 분야. 두바이 오피스 확인, ☎ +971 4 439 1000(대표)",con:"인테리어보다 대형 인프라·건축 중심 — 소규모엔 오버스펙",web:"aecom.com"},
+   {n:"Gleeds",added:"2026-07-07",loc:"Office 3121, Bldg 3, Gold & Diamond Park, SZR, Dubai",tier:"premium",grade:["apartment","mid-tier","high-end villa","hotel-commercial"],
+    brands:"Cost management·QS·building surveying·strategic advisory — 독립계 글로벌",pro:"독립성(비 대형그룹) + 20년+ UAE 실적, 호스피탈리티/레지덴셜 커버. ☎ +971 4 321 4435(재확인 권장)",con:"현행 주소는 Gold & Diamond Park 단일(과거 DIFC 등재는 폐지)",web:"gleeds.com"},
    {n:"Arcadis (구 EC Harris)",added:"2026-07-07",loc:"Dubai (+ Abu Dhabi)",tier:"premium",grade:["hotel-commercial","high-end villa","mid-tier"],
     brands:"Cost/commercial management·QS (EC Harris cost 통합) — 코스트+지속가능성",pro:"EC Harris QS 유산 + 글로벌망, 지속가능성 연계. ☎ +971 4 338 0075",con:"cost 부문이 대형 조직 내 일부 — 인테리어 전담 포지션은 약함",web:"arcadis.com"},
    {n:"Cumming Group",added:"2026-07-07",loc:"iRise Bldg, TECOM (Barsha Heights), Dubai (+ AD)",tier:"premium",grade:["hotel-commercial","high-end villa","mid-tier"],flag:true,
-    brands:"Program·project·construction·cost management — 미국계 PM+cost 컨설턴시",pro:"미국계 PM/cost 강자, 현지 cost 리더십 확립",con:"🚩 스트리트 주소·대표전화 공개 부족(info@cumming-group.com)",web:"cumming-group.com"},
-   {n:"WT Partnership (WT ME)",added:"2026-07-07",loc:"Blue Sky Tower, Capital Gate, Abu Dhabi",tier:"premium",grade:["hotel-commercial","high-end villa"],flag:true,
-    brands:"Cost management·QS·MEP cost — 75년+ 순수 QS (Emirates Palace 리퍼비시 QS)",pro:"순수 QS 전문성, MEP·호텔 리퍼비시 등 인테리어 인접 실적. ☎ +971 2 666 3490",con:"🚩 공식상 Dubai 단독 오피스 없음(AD 거점) — Dubai 원격 대응 확인",web:"wtpartnership.ae"},
+    brands:"Program·project·construction·cost management — 미국계 PM+cost 컨설턴시",pro:"미국계 PM/cost 강자, 현지 cost 리더십 확립. 두바이 iRise 빌딩 이전 확인(보도자료)",con:"🚩 건물은 확인되나 층·스위트·대표전화 미공개 — 컨택은 info@cumming-group.com 또는 웹폼",web:"cumming-group.com"},
+   {n:"WT Partnership (WT ME)",added:"2026-07-07",loc:"Office 802, Blue Sky Tower, Capital Gate, Abu Dhabi",tier:"premium",grade:["hotel-commercial","high-end villa"],
+    brands:"Cost management·QS·MEP cost — 75년+ 순수 QS (Emirates Palace 리퍼비시 QS)",pro:"순수 QS 전문성, MEP·호텔 리퍼비시 등 인테리어 인접 실적. AD 오피스 확인 ☎ +971 2 666 3490 · abudhabi@wtpartnership.ae",con:"UAE 거점은 아부다비뿐(Dubai 단독 오피스 없음) — 두바이 현장은 원격 대응",web:"wtpartnership.ae"},
    {n:"Linesight",added:"2026-07-07",loc:"Mazaya Business Ave, JLT, Dubai",tier:"premium",grade:["hotel-commercial","mid-tier"],
     brands:"Cost management·QS — cost predictability·value 전문 (데이터센터·상업 강점)",pro:"아일랜드계 글로벌 QS, 하이테크·상업 강점. ☎ +971 4 432 3831",con:"인테리어보다 하이테크/상업 대형 중심",web:"linesight.com"},
-   {n:"Mace (Mace Consult)",added:"2026-07-07",loc:"Business Bay / SZR, Dubai",tier:"luxury",grade:["hotel-commercial","high-end villa"],flag:true,
-    brands:"Cost/commercial consultancy·QS (Mace Consult) — PM+cost 통합 (Expo 2020·One Za'abeel)",pro:"1998~ 초대형 랜드마크 실적, 프리미엄 브랜드",con:"🚩 2026 Mace Consult/Construct 분사 과도기 — 서비스·연락처 재확인, 소규모엔 오버스펙",web:"macegroup.com"},
+   {n:"Mace (Mace Consult)",added:"2026-07-07",loc:"Aspect Tower, Executive Towers Zone A, L21 Office 2104, Business Bay, Dubai",tier:"luxury",grade:["hotel-commercial","high-end villa"],
+    brands:"Cost/commercial consultancy·QS (Mace Consult, RICS) — PM+cost 통합 (Expo 2020·One Za'abeel)",pro:"1998~ 초대형 랜드마크 실적, 프리미엄 브랜드. Mace Consult 독립법인 분사 완료(2026-03), ☎ +971 4 447 0207",con:"소규모 인테리어엔 오버스펙 — cost/QS는 Mace Consult 부문",web:"macegroup.com"},
    {n:"AESG",added:"2026-07-07",loc:"Ibn Battuta Gate Offices, Jebel Ali, Dubai",tier:"premium",grade:["hotel-commercial","high-end villa","mid-tier"],
     brands:"Cost management(QS·budgeting·project monitoring) + 스페셜리스트 엔지니어링·지속가능성",pro:"두바이 태생(2011) 현지 밀착 + 엔지니어링/지속가능성 통합 원스톱. ☎ +971 4 432 6242",con:"순수 QS 전문 펌 대비 cost는 다분야 중 일부",web:"aesg.com"},
    {n:"Stonehaven",src:"user",added:"2026-07-07",loc:"Dubai",tier:"mid",grade:["mid-tier","high-end villa","hotel-commercial"],
     brands:"적산·QS·코스트 컨설팅 (UAE 로컬 중견) — 구분: 중견",pro:"★사용자 제공(실무 적산). ☎ +971 4 570 2994 · hello@stonehaven.ae",con:"글로벌 대형 대비 규모 작음 — 인테리어 실무 적산엔 적합. 서비스 범위 확인",web:"stonehaven.ae"},
-   {n:"Land Sterling",src:"user",added:"2026-07-07",loc:"Dubai Silicon Oasis",tier:"mid",grade:["mid-tier","high-end villa","hotel-commercial"],flag:true,
-    brands:"부동산 종합 컨설팅 — 'Project Management & Cost Consultancy'부서에서 QS·적산·BOQ (RICS/CIOB 공인)",pro:"★사용자 제공. BOQ 서비스 페이지 확인, RICS chartered surveyor",con:"🚩 QS 외 부동산 자문 겸업. 표의 ☎ +971 4 501 3915는 부서직통 추정 — 대표번호 +971 4 380 8707",web:"landsterling.com"},
+   {n:"Land Sterling",src:"user",added:"2026-07-07",loc:"1F Block B, Dubai Silicon Oasis HQ Bldg, Dubai",tier:"mid",grade:["mid-tier","high-end villa","hotel-commercial"],flag:true,
+    brands:"부동산 종합 컨설팅 — 'Project Management & Cost Consultancy'부서에서 QS·적산·BOQ (RICS 공인)",pro:"★사용자 제공. BOQ·Cost Consultancy 서비스 페이지 확인, RICS chartered surveyor. 대표 ☎ +971 4 380 8707",con:"🚩 QS는 전담 부서(회사는 부동산 종합 컨설팅 겸업). 표에 있던 +971 4 501 3915는 공식 미확인 → 대표번호 사용",web:"landsterling.com"},
    {n:"TC Consultancy ME",src:"user",added:"2026-07-07",loc:"Dubai",tier:"mid",grade:["mid-tier","high-end villa","hotel-commercial"],
     brands:"코스트·QS 컨설팅 (중견)",pro:"★사용자 제공(실무 적산)",con:"연락처·서비스 상세는 사이트 문의폼으로 확인",web:"tccons.ae"},
    {n:"Araka Engineering",src:"user",added:"2026-07-07",loc:"Dubai",tier:"mid",grade:["mid-tier","high-end villa","hotel-commercial"],
     brands:"엔지니어링 + BOQ(물량산출) 서비스 — 적산 특화 (전문)",pro:"★사용자 제공. BOQ 적산 특화, ☎ +971 4 393 6330 · info@araka.ae",con:"엔지니어링 겸업 — 적산 전담 범위 확인",web:"araka.ae/boq-services"},
-   {n:"BIMelite",src:"user",added:"2026-07-07",loc:"Ibn Battuta Gate, Jebel Ali, Dubai",tier:"mid",grade:["mid-tier","high-end villa","hotel-commercial"],flag:true,
-    brands:"BIM(빌딩정보모델링) 전문사 — 5D 물량산출은 부수 서비스 (3D 모델링·클래시·레이저스캔·Revit 교육이 주력)",pro:"★사용자 제공. BIM 기반 물량 산출 가능",con:"🚩 순수 적산·코스트 컨설팅사 아님(BIM 전문). 표 ☎ +971 54 445 0079 ↔ 사이트 +971 4 272 7592 불일치·이메일 gmail — 확인 필요",web:"bimelite.ae"},
-   {n:"IR Interior",src:"user",added:"2026-07-07",loc:"Port Saeed, Deira, Dubai",tier:"mid",grade:["mid-tier","high-end villa","hotel-commercial"],flag:true,also:["fitout-comm"],
-    brands:"인테리어·피트아웃 + Dubai Municipality/민방위 인허가 대행 전문 (BOQ는 부수 제공)",pro:"★사용자 제공. 인허가(시청·Civil Defence) 대행 강점, ☎ +971 4 548 1265 · info@irinterior.com",con:"🚩 순수 QS/적산 전문사 아님 — 인테리어·인허가 업체. 적산 단독 발주엔 부적합(인허가·피트아웃 목적이면 유용)",web:"irinterior.com"},
+   {n:"BIMelite",src:"user",added:"2026-07-07",loc:"Office 805F, Ibn Battuta Gate Offices, Jebel Ali, Dubai",tier:"mid",grade:["mid-tier","high-end villa","hotel-commercial"],flag:true,
+    brands:"BIM(빌딩정보모델링) 전문사 — 5D 물량산출은 부수 서비스 (3D 모델링·클래시·레이저스캔·Revit 교육이 주력)",pro:"★사용자 제공. BIM 기반 물량 산출 가능. ☎ +971 4 272 7592(대표) · +971 56 508 9016",con:"🚩 순수 적산·코스트 컨설팅사 아님(BIM 전문 — 인도·이집트 오프쇼어). 적산 단독 발주보다 BIM/모델 기반 물량용",web:"bimelite.ae"},
+   {n:"IR Interior",src:"user",added:"2026-07-07",loc:"Office 104, DNIR Bldg, Port Saeed, Deira, Dubai",tier:"mid",grade:["mid-tier","high-end villa","hotel-commercial"],flag:true,also:["fitout-comm"],
+    brands:"인테리어·피트아웃 + Dubai Municipality/민방위 인허가 대행 전문 (BOQ는 부수 제공)",pro:"★사용자 제공. 인허가(시청·Civil Defence·Trakhees·DEWA) 대행 강점, ☎ +971 4 548 1265 · info@irinterior.com",con:"🚩 순수 QS/적산 전문사 아님 — 인테리어·인허가 업체. 적산 단독 발주엔 부적합(인허가·피트아웃 목적이면 유용)",web:"irinterior.com"},
    {n:"D&A Consult",src:"user",added:"2026-07-07",loc:"Dubai",tier:"mid",grade:["mid-tier","high-end villa","hotel-commercial"],
     brands:"코스트·QS 컨설팅 (현행 거래 후보)",pro:"★사용자 제공. ☎ +971 4 294 1144 · Businessdevelopement@daconsult.ae",con:"서비스 상세·레퍼런스 확인 권장",web:"daconsult.ae"},
   ]},
@@ -1535,7 +1644,22 @@ function applyView(){
   const hub=document.getElementById('hub'), layout=document.querySelector('.layout'), tabs=document.getElementById('groupTabs'),
         catHub=document.getElementById('catHub'), catBack=document.getElementById('catBack'),
         controls=document.querySelector('.controls'), desk=document.getElementById('deskFilters');
-  if(currentView==='hub'){ hub.style.display=''; layout.style.display='none'; tabs.style.display='none'; window.scrollTo(0,0); return; }
+  const hsb=document.getElementById('hubSearchBar'); if(hsb) hsb.style.display=(currentView==='hub'||currentView==='search')?'':'none';
+  if(currentView==='hub'){ hub.style.display=''; layout.style.display='none'; tabs.style.display='none';
+    const _hs=document.getElementById('hubSearch'); if(_hs) _hs.value=''; window.scrollTo(0,0); return; }
+  if(currentView==='search'){
+    hub.style.display='none'; layout.style.display=''; tabs.style.display='flex';
+    catHub.classList.add('view-hidden'); catBack.style.display='none';
+    if(controls) controls.style.display='none'; if(desk) desk.style.display='none';
+    document.querySelectorAll('#content .group-head').forEach(gh=>gh.classList.add('view-hidden'));
+    document.querySelectorAll('#content .cat-block').forEach(b=>b.classList.remove('view-hidden'));
+    const pj0=document.getElementById('projects'), pb0=document.getElementById('playbook');
+    if(pj0) pj0.classList.add('view-hidden'); if(pb0) pb0.classList.add('view-hidden');
+    const ft=document.getElementById('fTag'); if(ft) ft.value='';
+    if(window.applyFilter) applyFilter();
+    tabs.querySelectorAll('[data-view]').forEach(t=>t.classList.remove('active'));
+    window.scrollTo(0,0); return;
+  }
   hub.style.display='none'; layout.style.display=''; tabs.style.display='flex';
   const isGroup=GROUP_ORDER.indexOf(currentView)>=0;
   const groupView=isGroup && !currentCat;      // 카테고리 카드 화면
@@ -1556,15 +1680,22 @@ function applyView(){
   if(pj) pj.classList.toggle('view-hidden', currentView!=='projects');
   if(pb) pb.classList.toggle('view-hidden', currentView!=='playbook');
   tabs.querySelectorAll('[data-view]').forEach(t=>t.classList.toggle('active', t.dataset.view===currentView));
+  if(window.updateTagFilter) window.updateTagFilter();
   window.scrollTo(0,0);
 }
 function setView(v){ currentView=v; currentCat=null;
   if(GROUP_ORDER.indexOf(v)>=0){ const cs=catsOf(v); if(cs.length===1) currentCat=cs[0].id; }  // 단일 카테고리 그룹은 바로 업체로
-  applyView();
+  const _s=document.getElementById('search'); if(_s) _s.value='';
+  applyView(); if(window.applyFilter) applyFilter();
 }
-function openCat(catId){ const c=DATA.find(x=>x.id===catId); if(c){ currentView=groupOf(c); currentCat=catId; applyView(); } }
+function openCat(catId){ const c=DATA.find(x=>x.id===catId); if(c){ currentView=groupOf(c); currentCat=catId;
+  const _s=document.getElementById('search'); if(_s) _s.value='';
+  applyView(); if(window.applyFilter) applyFilter(); } }
+function runGlobalSearch(q){ currentView='search'; currentCat=null; const s=document.getElementById('search'); if(s) s.value=q; applyView(); }
 (function(){var cb=document.getElementById('catBack'); if(cb)cb.onclick=()=>{ currentCat=null; applyView(); };})();
 buildGroupTabs(); applyView();
+(function(){ var hs=document.getElementById('hubSearch'); if(!hs) return;
+  hs.addEventListener('input', function(){ var q=hs.value.trim(); if(q) runGlobalSearch(q); else setView('hub'); }); })();
 
 const search=document.getElementById('search'), fGrade=document.getElementById('fGrade'), fTier=document.getElementById('fTier'), fStatus=document.getElementById('fStatus'), fRegion=document.getElementById('fRegion'), fSupply=document.getElementById('fSupply'), fTag=document.getElementById('fTag');
 let newOnly=false;
@@ -1910,6 +2041,7 @@ gotop.classList.add('show');
   GROUPS.forEach((g,gi)=>{
     const h=document.createElement('h4'); h.textContent=g.title; body.appendChild(h);
     const wrap=document.createElement('div'); wrap.className='schips';
+    if(gi===5){ h.dataset.tagrow='1'; wrap.dataset.tagrow='1'; }
     g.opts.forEach(([v,lab])=>{
       const b=document.createElement('button'); b.type='button'; b.className='schip';
       b.textContent=lab; b.dataset.g=gi; b.dataset.v=v;
@@ -1930,6 +2062,7 @@ gotop.classList.add('show');
   if(desk){
     GROUPS.forEach((g,gi)=>{
       const row=document.createElement('div'); row.className='df-row';
+      if(gi===5) row.dataset.tagrow='1';
       const lab=document.createElement('div'); lab.className='df-label'; lab.textContent=g.title; row.appendChild(lab);
       const wrap=document.createElement('div'); wrap.className='df-chips';
       g.opts.forEach(([v,labx])=>{
@@ -1970,7 +2103,8 @@ gotop.classList.add('show');
   }
   function openSheet(){ ov.classList.add('open'); sheet.classList.add('open'); refresh(); }
   function closeSheet(){ ov.classList.remove('open'); sheet.classList.remove('open'); }
-  fbtn.onclick=openSheet; ov.onclick=closeSheet; viewBtn.onclick=closeSheet;
+  fbtn.onclick=()=>{ if(window.matchMedia('(max-width:820px)').matches){ openSheet(); } else { desk.classList.toggle('collapsed'); refresh(); } };
+  ov.onclick=closeSheet; viewBtn.onclick=closeSheet;
   resetBtn.onclick=()=>{ GROUPS.forEach(g=>g.sel.value=''); if(newOnly)btnNew.click(); search.value=''; applyFilter(); refresh(); };
   search.addEventListener('input',refresh);
   btnNew.addEventListener('click',refresh); // 데스크톱/시트 어디서 눌러도 동기화
@@ -1985,7 +2119,14 @@ gotop.classList.add('show');
       setTab(t);
     };
   });
-  refresh();
+  // 공종(시공) 필터는 시공 카테고리에서만 노출 — 그 외 카테고리에선 숨김(빈 결과 방지)
+  window.updateTagFilter=function(){
+    var show=(currentCat==='fitout-comm'||currentCat==='fitout-resi');
+    document.querySelectorAll('[data-tagrow]').forEach(function(el){ el.style.display=show?'':'none'; });
+    if(!show && fTag.value){ fTag.value=''; applyFilter(); }
+    refresh();
+  };
+  updateTagFilter();
 })();
 </script>
 </body>
